@@ -1,5 +1,8 @@
 package project1;
 
+/**
+ * Utility class to allow the application to send and receive from the server.
+ */
 public class ConnectionUtils {
 	public static final String HOST="bicycle.cs.washington.edu";
 	public static final int INIT_UDP_PORT = 12235;
