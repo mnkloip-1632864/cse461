@@ -18,5 +18,9 @@ public class ConnectionUtils {
 		else
 			return realLength;
 	}
+	
+	public static int getProtocolNumber() {
+		return 0;
+	}
 
 }
