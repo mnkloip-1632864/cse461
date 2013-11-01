@@ -13,11 +13,12 @@ public class UDPConnection implements Connection {
 	private DatagramSocket dataSocket;
 	private int port;
 	
-	public UDPConnection(int port) {
+	public UDPConnection(int port, boolean enableTimeout) {
 		try {
 			dataSocket = new DatagramSocket();
 			dataSocket.connect(InetAddress.getByName(HOST), port);
-			dataSocket.setSoTimeout(Connection.TTL);
+			if (enableTimeout)
+				dataSocket.setSoTimeout(Connection.TTL);
 			this.port = port;
 		} catch (SocketException | UnknownHostException e) {
 			e.printStackTrace();

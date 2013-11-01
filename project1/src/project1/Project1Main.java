@@ -27,6 +27,24 @@ public class Project1Main {
 		System.out.println("Stage B: ");
 		System.out.println("The tcp_port is: " + tcp_port);
 		System.out.println("The secretB is: " + secretB);
+		// Stage C
+		byte[] receivedPacketC = Stage.stageC(tcp_port);
+		ByteBuffer actualData = ByteBuffer.wrap(receivedPacketC);
+		int num2 = actualData.getInt(12);
+		int len2 = actualData.getInt(16);
+		int secretC = actualData.getInt(20);
+		byte c = actualData.get(24);
+		System.out.println("Stage C: ");
+		System.out.println("num2 is: " + num2);
+		System.out.println("len2 is: " + len2);
+		System.out.println("secretC is: " + secretC);
+		System.out.println("char c is: " + c);
+		// Stage D
+		byte[] receivedPacketD = Stage.stageD(num2, len2, secretC, c);
+		actualData = ByteBuffer.wrap(receivedPacketD);
+		int secretD = actualData.getInt(12);
+		System.out.println("Stage D: ");
+		System.out.println("secretD is: " + secretD);
 	}
 
 }
