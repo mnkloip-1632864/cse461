@@ -24,7 +24,7 @@ public class Stage {
 			byte[] packet = new byte[10];
 			dataPacket = new DatagramPacket(packet,
 					                        packet.length,
-					                        InetAddress.getByName(ConnectionUtils.HOST),
+					                        InetAddress.getByName(Connection.HOST),
 					                        ConnectionUtils.INIT_UDP_PORT);
 			dataSocket.send(dataPacket);
 			
