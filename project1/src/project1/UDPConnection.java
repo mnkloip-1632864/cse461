@@ -16,8 +16,8 @@ public class UDPConnection implements Connection {
 	public UDPConnection(int port) {
 		try {
 			dataSocket = new DatagramSocket();
-			dataSocket.connect(InetAddress.getByName(Connection.HOST), port);
-			//dataSocket.setSoTimeout(Connection.TTL);
+			dataSocket.connect(InetAddress.getByName(HOST), port);
+			dataSocket.setSoTimeout(Connection.TTL);
 			this.port = port;
 		} catch (SocketException | UnknownHostException e) {
 			e.printStackTrace();
@@ -27,7 +27,7 @@ public class UDPConnection implements Connection {
 	@Override
 	public void send(byte[] message) {
 		try {
-			InetAddress addr = InetAddress.getByName(Connection.HOST);
+			InetAddress addr = InetAddress.getByName(HOST);
 			DatagramPacket packet = new DatagramPacket(message, message.length, addr, port);
 			dataSocket.send(packet);
 		} catch (IOException e) {
