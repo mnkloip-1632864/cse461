@@ -17,17 +17,19 @@ public class Stage {
 		return receivePacket;
 	}
 	
-	public static byte[] stageB(int num, int len, int udp_port) {
+	public static byte[] stageB(int num, int len, int udp_port, int secretA) {
 		byte[] payload;
+		byte[] header = ConnectionUtils.constructHeader(len + 4, secretA, (short)1);;
 		Connection udpConn = new UDPConnection(udp_port);
 		for (int i = 0; i < num; i++) {
 			payload = ByteBuffer.allocate(len + 4).order(ByteOrder.BIG_ENDIAN).putInt(i).array();
-			udpConn.send(payload);
+			byte[] message = ConnectionUtils.merge(header, payload);
+			udpConn.send(message);
 			int receivedPacketLength = ConnectionUtils.HEADER_LENGTH + 4;
 			byte[] receivedPacket = udpConn.receive(receivedPacketLength);
 			while (receivedPacket == null ||
-				   ByteBuffer.wrap(receivedPacket, ConnectionUtils.HEADER_LENGTH, 4).getInt() != i) {
-				udpConn.send(payload);
+				   ByteBuffer.wrap(receivedPacket).getInt(12) != i) {
+				udpConn.send(message);
 				receivedPacket = udpConn.receive(receivedPacketLength);
 			}
 		}
