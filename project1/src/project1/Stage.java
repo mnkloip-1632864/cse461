@@ -7,7 +7,7 @@ public class Stage {
 	
 	public static byte[] stageA() {
 		byte[] payload = "hello world\0".getBytes();
-		int totalLength = payload.length + ConnectionUtils.HEADER_LENGTH;
+		int totalLength = payload.length;// + ConnectionUtils.HEADER_LENGTH;
 		byte[] header = ConnectionUtils.constructHeader(totalLength, 0, (short)1);
 		byte[] message = ConnectionUtils.merge(header, payload);
 		Connection udpConn = new UDPConnection(ConnectionUtils.INIT_UDP_PORT);
