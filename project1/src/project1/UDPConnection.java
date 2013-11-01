@@ -47,4 +47,9 @@ public class UDPConnection implements Connection {
 		return packet.getData();
 	}
 
+	@Override
+	public void close() {
+		dataSocket.close();
+	}
+
 }

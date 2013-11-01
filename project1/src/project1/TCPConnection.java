@@ -1,9 +1,13 @@
 package project1;
 
+import java.net.Socket;
+
 public class TCPConnection implements Connection {
 
+	private Socket socket;
+	
 	public TCPConnection(int port) {
-		// TODO
+		
 	}
 	
 	@Override
@@ -16,6 +20,12 @@ public class TCPConnection implements Connection {
 	public byte[] receive(int bufferLength) {
 		// TODO Auto-generated method stub
 		return null;
+	}
+
+	@Override
+	public void close() {
+		// TODO Auto-generated method stub
+		
 	}
 
 }

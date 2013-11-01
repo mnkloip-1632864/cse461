@@ -22,5 +22,10 @@ public interface Connection {
 	 */
 	public byte[] receive(int bufferLength);
 
+	/**
+	 * Closes the connection
+	 */
+	public void close();
+	
 }
 
