@@ -22,6 +22,21 @@ public class ConnectionUtils {
 			return realLength;
 	}
 	
+	/**
+	 * merges 'first' and 'second' into one byte[] that has a length divisible by 4
+	 * @param first the first array in the message
+	 * @param second the next array in the message
+	 * @return a byte[] that contains second concatenated to first followed by 0s 
+	 *         to make the total length divisible by 4.
+	 */
+	public static byte[] merge(byte[] first, byte[] second) {
+		int length = first.length + second.length;
+		int padLen = 4 - length % 4;
+		length += padLen == 4 ? 0 : padLen;
+		byte[] combo = ByteBuffer.allocate(length).put(first).put(second).array();
+		return combo;
+	}
+	
 	public static int getProtocolNumber() {
 		return 0;
 	}
