@@ -15,7 +15,7 @@ public class UDPConnection implements Connection {
 	public UDPConnection(int port) {
 		try {
 			dataSocket = new DatagramSocket(port);
-			dataSocket.setSoTimeout(Connection.TTL);
+			//dataSocket.setSoTimeout(Connection.TTL);
 			this.port = port;
 		} catch (SocketException e) {
 			e.printStackTrace();

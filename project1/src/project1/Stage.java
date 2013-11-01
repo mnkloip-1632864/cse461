@@ -1,10 +1,5 @@
 package project1;
 
-import java.io.IOException;
-import java.net.DatagramPacket;
-import java.net.DatagramSocket;
-import java.net.InetAddress;
-import java.net.SocketException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 
@@ -14,7 +9,7 @@ public class Stage {
 		byte[] payload = "hello world/0".getBytes();
 		Connection udpConn = new UDPConnection(ConnectionUtils.INIT_UDP_PORT);
 		udpConn.send(payload);
-		byte[] receivePacket = udpConn.receive();
+		byte[] receivePacket = udpConn.receive(ConnectionUtils.HEADER_LENGTH + 16);
 		udpConn.close();
 		return receivePacket;
 	}
@@ -33,7 +28,7 @@ public class Stage {
 				receivedPacket = udpConn.receive(receivedPacketLength);
 			}
 		}
-		byte[] received = udpConn.receive();
+		byte[] received = udpConn.receive(ConnectionUtils.HEADER_LENGTH + 8);
 		udpConn.close();
 		return received;
 	}
@@ -45,8 +40,6 @@ public class Stage {
 		ByteBuffer actualData = ByteBuffer.wrap(receivedPacket, ConnectionUtils.HEADER_LENGTH, 13);
 		int num2 = actualData.getInt();
 		int len2 = actualData.getInt(4);
+		return null;
 	}
-	
-	
-
 }
