@@ -13,7 +13,7 @@ public class TCPConnection implements Connection {
 	}
 
 	@Override
-	public byte[] receive() {
+	public byte[] receive(int bufferLength) {
 		// TODO Auto-generated method stub
 		return null;
 	}

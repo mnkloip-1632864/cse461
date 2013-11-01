@@ -3,6 +3,7 @@ package project1;
 public interface Connection {
 	
 	public static final String HOST="bicycle.cs.washington.edu";
+	public static final int TTL = 500;
 
 	/**
 	 * Sends the given message to the server.
@@ -13,9 +14,13 @@ public interface Connection {
 	
 	/**
 	 * Waits to receive a message from the server.
+	 * @param bufferLength signifies the length of the buffer that we want
+	 *                     to receive with.
 	 * @return a byte[] representing the message that the server sent us.
+	 *         If a message is not received within TTL, then null will be
+	 *         returned.
 	 */
-	public byte[] receive();
+	public byte[] receive(int bufferLength);
 
 }
 
