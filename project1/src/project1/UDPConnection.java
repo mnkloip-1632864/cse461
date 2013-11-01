@@ -6,6 +6,7 @@ import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.SocketException;
 import java.net.SocketTimeoutException;
+import java.net.UnknownHostException;
 
 public class UDPConnection implements Connection {
 
@@ -14,10 +15,11 @@ public class UDPConnection implements Connection {
 	
 	public UDPConnection(int port) {
 		try {
-			dataSocket = new DatagramSocket(port);
+			dataSocket = new DatagramSocket();
+			dataSocket.connect(InetAddress.getByName(Connection.HOST), port);
 			//dataSocket.setSoTimeout(Connection.TTL);
 			this.port = port;
-		} catch (SocketException e) {
+		} catch (SocketException | UnknownHostException e) {
 			e.printStackTrace();
 		}
 	}

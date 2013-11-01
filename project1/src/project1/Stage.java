@@ -6,9 +6,12 @@ import java.nio.ByteOrder;
 public class Stage {
 	
 	public static byte[] stageA() {
-		byte[] payload = "hello world/0".getBytes();
+		byte[] payload = "hello world\0".getBytes();
+		int totalLength = payload.length + ConnectionUtils.HEADER_LENGTH;
+		byte[] header = ConnectionUtils.constructHeader(totalLength, 0, (short)1);
+		byte[] message = ConnectionUtils.merge(header, payload);
 		Connection udpConn = new UDPConnection(ConnectionUtils.INIT_UDP_PORT);
-		udpConn.send(payload);
+		udpConn.send(message);
 		byte[] receivePacket = udpConn.receive(ConnectionUtils.HEADER_LENGTH + 16);
 		udpConn.close();
 		return receivePacket;
