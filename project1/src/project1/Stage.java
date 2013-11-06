@@ -4,7 +4,7 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 
 public class Stage {
-	private static Connection tcpConn;
+	private static Connection tcpConn; // TCP connection
 	
 	public static byte[] stageA() {
 		byte[] payload = "hello world\0".getBytes();
