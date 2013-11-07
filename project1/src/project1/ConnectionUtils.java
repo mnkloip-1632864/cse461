@@ -11,16 +11,6 @@ public class ConnectionUtils {
 	public static final int HEADER_LENGTH = 12;
 	public static final short STUDENT_NUM = 706;
 	
-	// only one question remain is how to represent
-	// uint32_t in java. 
-	public static int getPacketLength(int realLength) {
-		int res = realLength / 4;
-		if (realLength % 4 != 0)
-			return 4*(res + 1);
-		else
-			return realLength;
-	}
-	
 	/**
 	 * merges 'first' and 'second' into one byte[] that has a length divisible by 4
 	 * @param first the first array in the message
@@ -36,10 +26,13 @@ public class ConnectionUtils {
 		return combo;
 	}
 	
-	public static int getProtocolNumber() {
-		return 0;
-	}
-	
+	/**
+	 * Constructs the header for a message.
+	 * @param payload_len the length of the payload of the message
+	 * @param psecret the secret value for the previous stage
+	 * @param step the current step number this message is being sent for
+	 * @return a byte[] that contains the header for the packet to be sent.
+	 */
 	public static byte[] constructHeader(int payload_len, int psecret, short step) {
 		ByteBuffer b = ByteBuffer.allocate(12).order(ByteOrder.BIG_ENDIAN);
 		b.putInt(payload_len);
