@@ -1,0 +1,10 @@
+<?xml version="1.0"?>
+<project name="Project1" default="compile" basedir=".">
+    <property name="src" location="src"/>
+    <property name="bin" location="bin"/>
+
+    <target name="compile">
+        <mkdir dir="${bin}"/>
+    </target>
+
+</project>
