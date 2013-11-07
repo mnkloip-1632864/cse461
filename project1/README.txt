@@ -1,8 +1,11 @@
-Joseph Godlewski and Zhiting Zhu
+Joseph Godlewski    Zhiting Zhu
+joe3701             zzt0215
+1021706             1030029
+
 CSE 461 A
 README for submission 1:
 
-For compilation and running, make sure you are in the base directory (the one with the build.xml file)
+For compilation and running, unzip code.zip and make sure you are in the code directory (the directory with the build.xml file)
 
 Compilation can be performed by running the command: ant compile
 To run the program, use either the command: ant
