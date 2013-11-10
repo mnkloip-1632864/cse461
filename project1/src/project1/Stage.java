@@ -4,16 +4,20 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 
 public class Stage {
-	private static Connection tcpConn; // TCP connection
+	private static final String HELLO_WORLD = "hello world\0";
+	private static final int INT_SIZE = 4;
+	private static Connection tcpConn;
+
 	
 	public static byte[] stageA() {
-		byte[] payload = "hello world\0".getBytes();
-		int totalLength = payload.length;// + ConnectionUtils.HEADER_LENGTH;
+		byte[] payload = HELLO_WORLD.getBytes();
+		int totalLength = payload.length;
 		byte[] header = ConnectionUtils.constructHeader(totalLength, 0, (short)1);
 		byte[] message = ConnectionUtils.merge(header, payload);
 		Connection udpConn = new UDPConnection(ConnectionUtils.INIT_UDP_PORT, false);
 		udpConn.send(message);
-		byte[] receivePacket = udpConn.receive(ConnectionUtils.HEADER_LENGTH + 16);
+		int responseSize = ConnectionUtils.HEADER_LENGTH + 4 * INT_SIZE;
+		byte[] receivePacket = udpConn.receive(responseSize);
 		udpConn.close();
 		return receivePacket;
 	}
@@ -22,11 +26,12 @@ public class Stage {
 		byte[] payload;
 		byte[] header = ConnectionUtils.constructHeader(len + 4, secretA, (short)1);;
 		Connection udpConn = new UDPConnection(udp_port, true);
+		// send packets to the server, re-sending if an acknowledgment isn't received
 		for (int i = 0; i < num; i++) {
 			payload = ByteBuffer.allocate(len + 4).order(ByteOrder.BIG_ENDIAN).putInt(i).array();
 			byte[] message = ConnectionUtils.merge(header, payload);
 			udpConn.send(message);
-			int receivedPacketLength = ConnectionUtils.HEADER_LENGTH + 4;
+			int receivedPacketLength = ConnectionUtils.HEADER_LENGTH + INT_SIZE;
 			byte[] receivedPacket = udpConn.receive(receivedPacketLength);
 			while (receivedPacket == null ||
 				   ByteBuffer.wrap(receivedPacket).getInt(12) != i) {
@@ -34,14 +39,15 @@ public class Stage {
 				receivedPacket = udpConn.receive(receivedPacketLength);
 			}
 		}
-		byte[] received = udpConn.receive(ConnectionUtils.HEADER_LENGTH + 8);
+		int responseSize = ConnectionUtils.HEADER_LENGTH + 2 * INT_SIZE;
+		byte[] received = udpConn.receive(responseSize);
 		udpConn.close();
 		return received;
 	}
 	
 	public static byte[] stageC(int tcp_port) {
 		tcpConn = new TCPConnection(tcp_port);
-		int receivedLength = ConnectionUtils.HEADER_LENGTH + 16;
+		int receivedLength = ConnectionUtils.HEADER_LENGTH + 4 * INT_SIZE;
 		byte[] receivedPacket = tcpConn.receive(receivedLength);
 		return receivedPacket;
 	}
@@ -58,7 +64,8 @@ public class Stage {
 			byte[] message = ConnectionUtils.merge(header, payload);
 			tcpConn.send(message);
 		}
-		byte[] receivedPacket = tcpConn.receive(ConnectionUtils.HEADER_LENGTH + 4);
+		int responseSize = ConnectionUtils.HEADER_LENGTH + INT_SIZE;
+		byte[] receivedPacket = tcpConn.receive(responseSize);
 		tcpConn.close();
 		return receivedPacket;
 	}
