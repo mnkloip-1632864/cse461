@@ -6,29 +6,26 @@ import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.SocketException;
 import java.net.SocketTimeoutException;
-import java.net.UnknownHostException;
 
-public class UDPServerConnection implements ServerConnection {
+public class UDPServerConnection {
 
 	private DatagramSocket dataSocket;
 	private int port;
 	
 	public UDPServerConnection(int port, boolean enableTimeout) {
 		try {
-			dataSocket = new DatagramSocket();
-			dataSocket.connect(InetAddress.getByName(HOST), port);
+			dataSocket = new DatagramSocket(port);
 			if (enableTimeout)
-				dataSocket.setSoTimeout(ServerConnection.TTL);
+				dataSocket.setSoTimeout(ConnectionUtils.TTL);
 			this.port = port;
-		} catch (SocketException | UnknownHostException e) {
+		} catch (SocketException e) {
 			e.printStackTrace();
 		}
 	}
 	
-	@Override
 	public void send(byte[] message) {
 		try {
-			InetAddress addr = InetAddress.getByName(HOST);
+			InetAddress addr = InetAddress.getByName(""); //TODO: find a way to get the address.
 			DatagramPacket packet = new DatagramPacket(message, message.length, addr, port);
 			dataSocket.send(packet);
 		} catch (IOException e) {
@@ -36,7 +33,6 @@ public class UDPServerConnection implements ServerConnection {
 		}
 	}
 
-	@Override
 	public byte[] receive(int bufferLength) {
 		byte[] buffer = new byte[bufferLength];
 		DatagramPacket packet = new DatagramPacket(buffer, bufferLength);
@@ -50,7 +46,6 @@ public class UDPServerConnection implements ServerConnection {
 		return packet.getData();
 	}
 
-	@Override
 	public void close() {
 		dataSocket.close();
 	}

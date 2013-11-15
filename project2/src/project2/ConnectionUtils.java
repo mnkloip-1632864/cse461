@@ -10,6 +10,7 @@ public class ConnectionUtils {
 	public static final int INIT_UDP_PORT = 12235;
 	public static final int HEADER_LENGTH = 12;
 	public static final short STUDENT_NUM = 706;
+	public static final int TTL = 3000;
 	
 	/**
 	 * merges 'first' and 'second' into one byte[] that has a length divisible by 4

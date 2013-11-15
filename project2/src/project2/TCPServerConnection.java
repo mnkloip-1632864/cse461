@@ -3,25 +3,23 @@ package project2;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.net.InetAddress;
-import java.net.Socket;
+import java.net.ServerSocket;
 
-public class TCPServerConnection implements ServerConnection {
+public class TCPServerConnection {
 
-	private Socket socket;
+	private ServerSocket serverSocket;
 	
 	public TCPServerConnection(int port) {
 		try {
-			socket = new Socket(InetAddress.getByName(HOST), port);
+			serverSocket = new ServerSocket(port);
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
 	}
 	
-	@Override
 	public void send(byte[] message) {
 		try {
-			OutputStream out = socket.getOutputStream();
+			OutputStream out = null; //TODO: serverSocket.getOutputStream();
 			out.write(message);
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -29,11 +27,10 @@ public class TCPServerConnection implements ServerConnection {
 		
 	}
 
-	@Override
 	public byte[] receive(int bufferLength) {
 		byte[] buffer = new byte[bufferLength];
 		try {
-			InputStream message = socket.getInputStream();
+			InputStream message = null; // TODO: serverSocket.getInputStream();
 			message.read(buffer, 0, bufferLength);
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -41,10 +38,9 @@ public class TCPServerConnection implements ServerConnection {
 		return buffer;
 	}
 
-	@Override
 	public void close() {
 		try {
-			socket.close();
+			serverSocket.close();
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
