@@ -9,7 +9,6 @@ import java.nio.ByteOrder;
 public class ConnectionUtils {
 	public static final int INIT_UDP_PORT = 12235;
 	public static final int HEADER_LENGTH = 12;
-	public static final short STUDENT_NUM = 706;
 	public static final int TTL = 3000;
 	
 	/**
@@ -32,14 +31,15 @@ public class ConnectionUtils {
 	 * @param payload_len the length of the payload of the message
 	 * @param psecret the secret value for the previous stage
 	 * @param step the current step number this message is being sent for
+	 * @param studentNo the student number to use 
 	 * @return a byte[] that contains the header for the packet to be sent.
 	 */
-	public static byte[] constructHeader(int payload_len, int psecret, short step) {
+	public static byte[] constructHeader(int payload_len, int psecret, short step, short studentNo) {
 		ByteBuffer b = ByteBuffer.allocate(12).order(ByteOrder.BIG_ENDIAN);
 		b.putInt(payload_len);
 		b.putInt(psecret);
 		b.putShort(step);
-		b.putShort(STUDENT_NUM);
+		b.putShort(studentNo);
 		return b.array();
 	}
 
