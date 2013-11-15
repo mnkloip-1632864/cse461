@@ -2,4 +2,4 @@
 
 
 Project 3 proposal:
-        For our project, we plan to implement a file-sharing service. This service will involve creating a centralized server that clients can connect to. Once connected, a client will create an ID that others can use to identify the client. If this client wishes to exchange files with another client, it will establish a connection with the other client, and file transfer can begin.
+        For our project, we plan to implement a file-sharing service. This service will involve creating a centralized server that clients can connect to. Once connected, a client lets the server know what files it can share and the server is updated to know which files are needed. When a client wants a file, it asks the server for the file. The server then gives the client the location of another client that has the file. The client containing the file then gives the requesting client the requested file.
