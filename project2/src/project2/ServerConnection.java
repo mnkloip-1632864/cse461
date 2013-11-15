@@ -1,6 +1,6 @@
 package project2;
 
-public interface Connection {
+public interface ServerConnection {
 	
 	public static final String HOST="bicycle.cs.washington.edu";
 	public static final int TTL = 500;

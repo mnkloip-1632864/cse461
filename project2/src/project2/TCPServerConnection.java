@@ -6,11 +6,11 @@ import java.io.OutputStream;
 import java.net.InetAddress;
 import java.net.Socket;
 
-public class TCPConnection implements Connection {
+public class TCPServerConnection implements ServerConnection {
 
 	private Socket socket;
 	
-	public TCPConnection(int port) {
+	public TCPServerConnection(int port) {
 		try {
 			socket = new Socket(InetAddress.getByName(HOST), port);
 		} catch (IOException e) {

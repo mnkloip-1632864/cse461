@@ -8,17 +8,17 @@ import java.net.SocketException;
 import java.net.SocketTimeoutException;
 import java.net.UnknownHostException;
 
-public class UDPConnection implements Connection {
+public class UDPServerConnection implements ServerConnection {
 
 	private DatagramSocket dataSocket;
 	private int port;
 	
-	public UDPConnection(int port, boolean enableTimeout) {
+	public UDPServerConnection(int port, boolean enableTimeout) {
 		try {
 			dataSocket = new DatagramSocket();
 			dataSocket.connect(InetAddress.getByName(HOST), port);
 			if (enableTimeout)
-				dataSocket.setSoTimeout(Connection.TTL);
+				dataSocket.setSoTimeout(ServerConnection.TTL);
 			this.port = port;
 		} catch (SocketException | UnknownHostException e) {
 			e.printStackTrace();
