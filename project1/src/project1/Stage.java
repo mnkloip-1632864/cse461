@@ -7,6 +7,7 @@ public class Stage {
 	private static final String HELLO_WORLD = "hello world\0";
 	private static final int INT_SIZE = 4;
 	private static Connection tcpConn;
+
 	
 	public static byte[] stageA() {
 		byte[] payload = HELLO_WORLD.getBytes();

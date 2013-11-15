@@ -1,0 +1,5 @@
+﻿Joseph Godlewski and Zhiting Zhu
+
+
+Project 3 proposal:
+        For our project, we plan to implement a file-sharing service. This service will involve creating a centralized server that clients can connect to. Once connected, a client will create an ID that others can use to identify the client. If this client wishes to exchange files with another client, it will establish a connection with the other client, and file transfer can begin.
