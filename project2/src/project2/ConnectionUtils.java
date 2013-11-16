@@ -2,6 +2,7 @@ package project2;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Utility class to allow the application to send and receive from the server.
@@ -10,6 +11,14 @@ public class ConnectionUtils {
 	public static final int INIT_UDP_PORT = 12235;
 	public static final int HEADER_LENGTH = 12;
 	public static final int TTL = 3000;
+	
+	private static AtomicInteger udpPort;
+	private static AtomicInteger tcpPort;
+	
+	static {
+		udpPort = new AtomicInteger(INIT_UDP_PORT + 1);
+		tcpPort = new AtomicInteger(12345);
+	}
 	
 	/**
 	 * merges 'first' and 'second' into one byte[] that has a length divisible by 4
@@ -41,6 +50,20 @@ public class ConnectionUtils {
 		b.putShort(step);
 		b.putShort(studentNo);
 		return b.array();
+	}
+	
+	/**
+	 * @return a unique UDP port number for the server to use.
+	 */
+	public static int getUDPPortNumber() {
+		return udpPort.getAndIncrement();
+	}
+	
+	/**
+	 * @return a unique TCP port number for the server to use.
+	 */
+	public static int getTCPPortNumber() {
+		return tcpPort.getAndIncrement();
 	}
 
 }

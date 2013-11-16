@@ -6,26 +6,22 @@ import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.SocketException;
 import java.net.SocketTimeoutException;
-import java.net.UnknownHostException;
 
 public class UDPServerConnection {
 	
 	private DatagramSocket dataSocket;
-	private int port;
-	private InetAddress latestReceivedAddress;
 	
 	public UDPServerConnection(int port, boolean enableTimeout) {
 		try {
-			dataSocket = new DatagramSocket(port, InetAddress.getByName("localhost"));
+			dataSocket = new DatagramSocket(port);
 			if (enableTimeout)
 				dataSocket.setSoTimeout(ConnectionUtils.TTL);
-			this.port = port;
-		} catch (SocketException | UnknownHostException e) {
+		} catch (SocketException e) {
 			e.printStackTrace();
 		}
 	}
 	
-	public void send(byte[] message, InetAddress address) {
+	public void send(byte[] message, InetAddress address, int port) {
 		try {
 			DatagramPacket packet = new DatagramPacket(message, message.length, address, port);
 			dataSocket.send(packet);
@@ -34,24 +30,19 @@ public class UDPServerConnection {
 		}
 	}
 
-	public byte[] receive(int bufferLength) {
+	public DatagramPacket receive(int bufferLength) {
 		byte[] buffer = new byte[bufferLength];
 		DatagramPacket packet = new DatagramPacket(buffer, bufferLength);
 		try {
 			dataSocket.receive(packet);
-			latestReceivedAddress = packet.getAddress();
 		} catch (SocketTimeoutException ste) {
 			return null;
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		return packet.getData();
+		return packet;
 	}
 
-	public InetAddress getLatestAddress() {
-		return latestReceivedAddress;
-	}
-	
 	public void close() {
 		dataSocket.close();
 	}
