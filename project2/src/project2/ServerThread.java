@@ -25,31 +25,35 @@ public class ServerThread extends Thread {
 	
 	@Override
 	public void run() {
-		// Extract out the payload fields in the initial response
-		ByteBuffer bb = ByteBuffer.wrap(initialResponse);
-		int num = bb.getInt(12);
-		int len = bb.getInt(16);
-		int udp_port = bb.getInt(20);
-		int secretA = bb.getInt(24);
-		
-		// Stage B
-		headerExpectations.setPayload(len + 4);
-		headerExpectations.setSecret(secretA);
-		headerExpectations.setStepNumber((short)1);
-		UDPServerConnection serverConn = new UDPServerConnection(udp_port);
-		for (int i = 0; i < num; i++) {
-			DatagramPacket message = serverConn.receive(
-					ConnectionUtils.getAlignedLength(ConnectionUtils.HEADER_LENGTH, len + 4));
-			byte[] data = message.getData();
-			bb = ByteBuffer.wrap(message.getData());
-			if (!checkHeader(bb) || !checkPacketLength(message.getData())) {
-				System.err.println("receive error");
-				serverConn.close();
+		try {
+			// Extract out the payload fields in the initial response
+			ByteBuffer bb = ByteBuffer.wrap(initialResponse);
+			int num = bb.getInt(12);
+			int len = bb.getInt(16);
+			int udp_port = bb.getInt(20);
+			int secretA = bb.getInt(24);
+			
+			// Stage B
+			headerExpectations.setPayload(len + 4);
+			headerExpectations.setSecret(secretA);
+			headerExpectations.setStepNumber((short)1);
+			UDPServerConnection serverConn = new UDPServerConnection(udp_port);
+			for (int i = 0; i < num; i++) {
+				DatagramPacket message = serverConn.receive(
+						ConnectionUtils.getAlignedLength(ConnectionUtils.HEADER_LENGTH, len + 4));
+				byte[] data = message.getData();
+				bb = ByteBuffer.wrap(message.getData());
+				if (!checkHeader(bb) || !checkPacketLength(message.getData())) {
+					System.err.println("receive error");
+					serverConn.close();
+				}
+				// try to determine whether to send the ack packet or not
+				if (rand.nextBoolean()) {
+					
+				}
 			}
-			// try to determine whether to send the ack packet or not
-			if (rand.nextBoolean()) {
-				
-			}
+		} finally {
+			Project2Main.threadExit();
 		}
 	}
 

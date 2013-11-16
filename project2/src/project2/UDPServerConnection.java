@@ -44,6 +44,15 @@ public class UDPServerConnection {
 		return packet;
 	}
 
+	public void disableTimeout() {
+		try {
+			dataSocket.setSoTimeout(0);
+		} catch (SocketException e) {
+			e.printStackTrace();
+		}
+		
+	}
+	
 	public void close() {
 		dataSocket.close();
 	}

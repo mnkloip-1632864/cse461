@@ -1,7 +1,6 @@
 package project2;
 
 import java.net.DatagramPacket;
-import java.net.SocketTimeoutException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.Random;
@@ -23,6 +22,7 @@ public class Project2Main {
 		// to handle the message and verify it is valid and 
 		// set up a new UDP server on a unique port. 
 		UDPServerConnection serverConn = new UDPServerConnection(ConnectionUtils.INIT_UDP_PORT);
+		serverConn.disableTimeout();
 		while(true) {
 			DatagramPacket message = serverConn.receive(ConnectionUtils.HEADER_LENGTH + 12);
 			// Verify the message is valid and send a response.
@@ -35,11 +35,15 @@ public class Project2Main {
 			// TODO: may want to use a ThreadPool to limit the amount of traffic
 			ServerThread thread = new ServerThread(studentNo, response);
 			thread.start();
-			count.decrementAndGet();	
+			count.incrementAndGet();	
 		}
 		
 	}
 
+	public static void threadExit() {
+		count.decrementAndGet();
+	}
+	
 	/**
 	 * Creates a response to a client connecting to the server. The response will contain the
 	 * number of messages to send, their length, what port to send the messages to, and a 
