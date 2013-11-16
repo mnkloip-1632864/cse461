@@ -11,14 +11,13 @@ public class UDPServerConnection {
 	
 	private DatagramSocket dataSocket;
 	
-	public UDPServerConnection(int port, boolean enableTimeout) {
+	public UDPServerConnection(int port) {
 		try {
 			dataSocket = new DatagramSocket(port);
-			if (enableTimeout)
-				dataSocket.setSoTimeout(ConnectionUtils.TTL);
+			dataSocket.setSoTimeout(ConnectionUtils.TTL);
 		} catch (SocketException e) {
 			e.printStackTrace();
-		}
+		} 
 	}
 	
 	public void send(byte[] message, InetAddress address, int port) {
@@ -36,6 +35,8 @@ public class UDPServerConnection {
 		try {
 			dataSocket.receive(packet);
 		} catch (SocketTimeoutException ste) {
+			System.out.println("Timeout!");
+			close();
 			return null;
 		} catch (IOException e) {
 			e.printStackTrace();

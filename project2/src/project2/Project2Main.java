@@ -1,20 +1,28 @@
 package project2;
 
 import java.net.DatagramPacket;
+import java.net.SocketTimeoutException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.Random;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class Project2Main {
 
 	public static final String HELLO = "hello world\0";
+	private static final int THREAD_POOL_SIZE = 30;
+	private static AtomicInteger count;
+	
+	static {
+		count = new AtomicInteger(0);
+	}
 	
 	public static void main(String[] args) {
 		// set up UDP connection and listen for clients.
 		// When a client sends a message, spawn a new thread
 		// to handle the message and verify it is valid and 
 		// set up a new UDP server on a unique port. 
-		UDPServerConnection serverConn = new UDPServerConnection(ConnectionUtils.INIT_UDP_PORT, false);
+		UDPServerConnection serverConn = new UDPServerConnection(ConnectionUtils.INIT_UDP_PORT);
 		while(true) {
 			DatagramPacket message = serverConn.receive(ConnectionUtils.HEADER_LENGTH + 12);
 			// Verify the message is valid and send a response.
@@ -27,7 +35,9 @@ public class Project2Main {
 			// TODO: may want to use a ThreadPool to limit the amount of traffic
 			ServerThread thread = new ServerThread(studentNo, response);
 			thread.start();
+			count.decrementAndGet();	
 		}
+		
 	}
 
 	/**

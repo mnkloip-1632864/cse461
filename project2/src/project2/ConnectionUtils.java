@@ -28,9 +28,7 @@ public class ConnectionUtils {
 	 *         to make the total length divisible by 4.
 	 */
 	public static byte[] merge(byte[] first, byte[] second) {
-		int length = first.length + second.length;
-		int padLen = 4 - length % 4;
-		length += padLen == 4 ? 0 : padLen;
+		int length = getAlignedLength(first.length, second.length);
 		byte[] combo = ByteBuffer.allocate(length).put(first).put(second).array();
 		return combo;
 	}
@@ -64,6 +62,21 @@ public class ConnectionUtils {
 	 */
 	public static int getTCPPortNumber() {
 		return tcpPort.getAndIncrement();
+	}
+	
+	/**
+	 * Return the least number divisible by 4 that is larger than or equal to 
+	 * the sum of first and second. 
+	 * @param first first number 
+	 * @param second second number
+	 * @return the least number divisible by 4 that is larger than or equal to
+	 *         the sum of first and second.  
+	 */
+	public static int getAlignedLength(int first, int second) {
+		int length = first + second;
+		int padLen = 4 - length % 4;
+		length += padLen == 4 ? 0 : padLen;
+		return length;
 	}
 
 }

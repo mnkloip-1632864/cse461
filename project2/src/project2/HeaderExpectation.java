@@ -18,6 +18,7 @@ public class HeaderExpectation {
 	private short stepNumber;
 	private short studentNumber;
 	
+	
 	public HeaderExpectation(int payload, int secret, short stepNumber, short studentNumber) {
 		this.payload = payload;
 		this.secret = secret;
