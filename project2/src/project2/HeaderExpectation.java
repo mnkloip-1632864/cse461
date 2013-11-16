@@ -29,6 +29,10 @@ public class HeaderExpectation {
 	public boolean checkPayloadLength(int clientLength) {
 		return payload == clientLength;
 	}
+	
+	public int getPayloadLength() {
+		return payload;
+	}
 
 	public void setPayload(int payload) {
 		this.payload = payload;
@@ -38,12 +42,20 @@ public class HeaderExpectation {
 		return secret == clientSecret;
 	}
 	
+	public int getSecret() {
+		return secret;
+	}
+	
 	public void setSecret(int secret) {
 		this.secret = secret;
 	}
 
 	public boolean checkStepNumber(short clientStepNumber) {
 		return stepNumber == clientStepNumber;
+	}
+	
+	public short getStepNumber() {
+		return stepNumber;
 	}
 
 	public void setStepNumber(short stepNumber) {
@@ -52,6 +64,10 @@ public class HeaderExpectation {
 	
 	public boolean checkStudentNumber(short clientStudentNumber) {
 		return studentNumber == clientStudentNumber;
+	}
+	
+	public short getStudentNumber() {
+		return studentNumber;
 	}
 	
 	public void setStudentNumber(short studentNumber) {

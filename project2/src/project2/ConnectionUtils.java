@@ -28,7 +28,7 @@ public class ConnectionUtils {
 	 *         to make the total length divisible by 4.
 	 */
 	public static byte[] merge(byte[] first, byte[] second) {
-		int length = getAlignedLength(first.length, second.length);
+		int length = getAlignedLength(first.length + second.length);
 		byte[] combo = ByteBuffer.allocate(length).put(first).put(second).array();
 		return combo;
 	}
@@ -66,14 +66,12 @@ public class ConnectionUtils {
 	
 	/**
 	 * Return the least number divisible by 4 that is larger than or equal to 
-	 * the sum of first and second. 
-	 * @param first first number 
-	 * @param second second number
+	 * the length. 
+	 * @param length the length to be padded
 	 * @return the least number divisible by 4 that is larger than or equal to
-	 *         the sum of first and second.  
+	 *         the length.  
 	 */
-	public static int getAlignedLength(int first, int second) {
-		int length = first + second;
+	public static int getAlignedLength(int length) {
 		int padLen = 4 - length % 4;
 		length += padLen == 4 ? 0 : padLen;
 		return length;

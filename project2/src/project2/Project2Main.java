@@ -63,7 +63,7 @@ public class Project2Main {
 									  .putInt(port)
 									  .putInt(secretA).array();
 		int totalLength = payload.length;
-		byte[] header = ConnectionUtils.constructHeader(totalLength, 0, (short)1, studentNo);
+		byte[] header = ConnectionUtils.constructHeader(totalLength, 0, (short)2, studentNo);
 		return ConnectionUtils.merge(header, payload);
 	}
 	/**

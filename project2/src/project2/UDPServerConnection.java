@@ -35,8 +35,6 @@ public class UDPServerConnection {
 		try {
 			dataSocket.receive(packet);
 		} catch (SocketTimeoutException ste) {
-			System.out.println("Timeout!");
-			close();
 			return null;
 		} catch (IOException e) {
 			e.printStackTrace();
