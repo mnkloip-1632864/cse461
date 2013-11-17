@@ -56,6 +56,7 @@ public class TCPServerConnection {
 	public void close() {
 		try {
 			serverSocket.close();
+			clientSocket.close();
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
