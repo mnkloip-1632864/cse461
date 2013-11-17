@@ -16,40 +16,46 @@ public class ServerThread extends Thread {
 	
 	private HeaderExpectation headerExpectations;
 	private Random rand;
-	private int tcpPort;
+	private int udpPort;
+	private TCPServerConnection tcpServerConn;
+	private int num;
 
-	// The initial response message contains the fields for part B 
-	private byte[] initialResponse;
+	private byte c;
 	
 	public ServerThread(short studentNo, byte[] responseMessage) {
-		this.headerExpectations = new HeaderExpectation(0, 0,(short) 0, studentNo);
+		// Extract out the payload fields in the response message
+		ByteBuffer bb = ByteBuffer.wrap(responseMessage);
+		this.num = bb.getInt(12);
+		int len = bb.getInt(16);
+		this.udpPort = bb.getInt(20);
+		int secretA = bb.getInt(24);
+		this.headerExpectations = new HeaderExpectation(len + INT_SIZE, secretA,(short)1, studentNo);
 		this.rand = new Random();
-		this.tcpPort = 0;
-		this.initialResponse = responseMessage;
+		this.tcpServerConn = null;
 	}
 	
 	@Override
 	public void run() {
 		try {
-			// Extract out the payload fields in the initial response
-			ByteBuffer bb = ByteBuffer.wrap(initialResponse);
-			int num = bb.getInt(12);
-			int len = bb.getInt(16);
-			int udp_port = bb.getInt(20);
-			int secretA = bb.getInt(24);
-			
 			// Stage B
-			headerExpectations.setPayload(len + INT_SIZE);
-			headerExpectations.setSecret(secretA);
-			headerExpectations.setStepNumber((short)1);
-			UDPServerConnection serverConn = new UDPServerConnection(udp_port);
-			if(!stageB(serverConn, len, num)) {
-				serverConn.close();
+			UDPServerConnection udpServerConn = new UDPServerConnection(udpPort);
+			if(!stageB(udpServerConn)) {
+				udpServerConn.close();
 				return;
 			}
+			udpServerConn.close();
 			
 			// Stage C
+			if(!tcpServerConn.accept()) {
+				tcpServerConn.close();
+				return;
+			}
+			// Connection established, send info
+			sendStageC();
 			
+			// Stage D
+			stageD();
+			tcpServerConn.close();
 			
 		} finally {
 			Project2Main.threadExit();
@@ -57,19 +63,85 @@ public class ServerThread extends Thread {
 	}
 
 	////////////////////////////////////////////////////////////////////////////////////
-	//								Stage B methods									  //
+	//								Stage D methods									  //
 	////////////////////////////////////////////////////////////////////////////////////
 	
-	private boolean stageB(UDPServerConnection serverConn, int len, int num) {
+	private void stageD() {
+		int expectedTotalLength = ConnectionUtils.HEADER_LENGTH + headerExpectations.getPayloadLength();
+		int expectedPacketLength = ConnectionUtils.getAlignedLength(expectedTotalLength);
+		int numPacketsReceived = 0;
+		while(numPacketsReceived != num) {
+			byte[] message = tcpServerConn.receive(expectedPacketLength);
+			ByteBuffer bb = ByteBuffer.wrap(message);
+			if(!checkHeader(bb) || !checkPayloadD(bb, headerExpectations.getPayloadLength())) {
+				System.err.println("receive error");
+				return;
+			}
+			numPacketsReceived++;
+		}
+		byte[] response = createResponseForD();
+		tcpServerConn.send(response);
+	}
+
+	private boolean checkPayloadD(ByteBuffer bb, int payloadLength) {
+		for(int i = 0; i < payloadLength; i++) {
+			byte b = bb.get(ConnectionUtils.HEADER_LENGTH + i);
+			if(b != c) {
+				return false;
+			}
+		}
+		return true;
+	}
+	
+	private byte[] createResponseForD() {
+		int secretD = rand.nextInt(20) + 1; // [1, 20]
+		byte[] payload = ByteBuffer.allocate(INT_SIZE).order(ByteOrder.BIG_ENDIAN).putInt(secretD).array();
+		byte[] header = ConnectionUtils.constructHeader(payload.length, headerExpectations.getSecret(), 
+													   (short)2, headerExpectations.getStudentNumber());
+		return ConnectionUtils.merge(header, payload);
+	}
+
+	////////////////////////////////////////////////////////////////////////////////////
+	//								Stage C methods									  //
+	////////////////////////////////////////////////////////////////////////////////////
+
+	private void sendStageC() {
+		int capacity = ConnectionUtils.getAlignedLength(3 * INT_SIZE + 1);
+		ByteBuffer payloadBuffer = ByteBuffer.allocate(capacity).order(ByteOrder.BIG_ENDIAN);
+		this.num = rand.nextInt(30) + 1; // [1, 30]
+		int len = rand.nextInt(20) + 1; // [1, 20]
+		int secretC = rand.nextInt(20) + 1; // [1, 20]
+		this.c = (byte) (rand.nextInt(255) + 1); // [1, 255]
+		byte[] payload = payloadBuffer.putInt(num)
+									  .putInt(len)
+									  .putInt(secretC)
+									  .put(c).array();
+		int totalLength = payload.length;
+		byte[] header = ConnectionUtils.constructHeader(totalLength, headerExpectations.getSecret(), 
+													   (short)2, headerExpectations.getStudentNumber());
+		byte[] message = ConnectionUtils.merge(header, payload);
+		tcpServerConn.send(message);
+		
+		// Set up expected values for part d
+		this.headerExpectations.setPayload(len);
+		this.headerExpectations.setSecret(secretC);
+		this.headerExpectations.setStepNumber((short)1);
+		
+	}
+	
+	
+	
+	////////////////////////////////////////////////////////////////////////////////////
+	//								Stage B methods									  //
+	////////////////////////////////////////////////////////////////////////////////////
+
+	private boolean stageB(UDPServerConnection serverConn) {
+		int len =  headerExpectations.getPayloadLength() - INT_SIZE;
 		int expectedPacketLength = ConnectionUtils.getAlignedLength(ConnectionUtils.HEADER_LENGTH + len + INT_SIZE);
 		int seqNum = 0;
 		while(true) {
 			DatagramPacket message = serverConn.receive(expectedPacketLength + 4);
 			if(message == null) {
-				if (seqNum == num) {
-					// The client is rightfully done sending messages
-					return true;
-				}
 
 				System.err.println("Timeout waiting for part B packet.");
 				return false;
@@ -98,6 +170,7 @@ public class ServerThread extends Thread {
 					// send ending packet
 					byte[] response = createResponseForB();
 					serverConn.send(response, clientAddr, port);
+					return true;
 				}
 			}
 		}
@@ -141,12 +214,14 @@ public class ServerThread extends Thread {
 	 */
 	private byte[] createResponseForB() {
 		ByteBuffer payloadBuffer = ByteBuffer.allocate(2 * INT_SIZE).order(ByteOrder.BIG_ENDIAN);
-		this.tcpPort = ConnectionUtils.getTCPPortNumber();
+		int tcpPort = ConnectionUtils.getTCPPortNumber();
 		int secretB = rand.nextInt(40) + 1; // [1, 40]
-		byte[] payload = payloadBuffer.putInt(this.tcpPort).putInt(secretB).array();
+		byte[] payload = payloadBuffer.putInt(tcpPort).putInt(secretB).array();
 		byte[] header = ConnectionUtils.constructHeader(payload.length, headerExpectations.getSecret(), 
 													   (short)2, headerExpectations.getStudentNumber());
 		this.headerExpectations.setSecret(secretB);
+		tcpServerConn = new TCPServerConnection(tcpPort);
+		
 		return ConnectionUtils.merge(header, payload);
 	}
 
