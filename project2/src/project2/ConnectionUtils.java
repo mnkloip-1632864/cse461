@@ -53,14 +53,22 @@ public class ConnectionUtils {
 	/**
 	 * @return a unique UDP port number for the server to use.
 	 */
-	public static int getUDPPortNumber() {
+	public static synchronized int getUDPPortNumber() {
+		int currentPort = udpPort.get();
+		if (currentPort == 65535) {
+			udpPort.set(INIT_UDP_PORT + 1);
+		}
 		return udpPort.getAndIncrement();
 	}
 	
 	/**
 	 * @return a unique TCP port number for the server to use.
 	 */
-	public static int getTCPPortNumber() {
+	public static synchronized int getTCPPortNumber() {
+		int currentPort = tcpPort.get();
+		if (currentPort == 65535) {
+			tcpPort.set(12345);
+		}
 		return tcpPort.getAndIncrement();
 	}
 	

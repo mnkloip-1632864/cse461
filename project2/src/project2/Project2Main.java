@@ -4,17 +4,10 @@ import java.net.DatagramPacket;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.Random;
-import java.util.concurrent.atomic.AtomicInteger;
 
 public class Project2Main {
 
 	public static final String HELLO = "hello world\0";
-	private static final int THREAD_POOL_SIZE = 30;
-	private static AtomicInteger count;
-	
-	static {
-		count = new AtomicInteger(0);
-	}
 	
 	public static void main(String[] args) {
 		// set up UDP connection and listen for clients.
@@ -35,13 +28,11 @@ public class Project2Main {
 			// TODO: may want to use a ThreadPool to limit the amount of traffic
 			ServerThread thread = new ServerThread(studentNo, response);
 			thread.start();
-			count.incrementAndGet();	
 		}
 		
 	}
 
 	public static void threadExit() {
-		count.decrementAndGet();
 	}
 	
 	/**

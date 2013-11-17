@@ -11,11 +11,13 @@ public class TCPServerConnection {
 
 	private ServerSocket serverSocket;
 	private Socket clientSocket;
+	private boolean closed;
 	
 	public TCPServerConnection(int port) {
 		try {
 			serverSocket = new ServerSocket(port);
 			serverSocket.setSoTimeout(ConnectionUtils.TTL);
+			closed = false;
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -54,11 +56,18 @@ public class TCPServerConnection {
 	}
 
 	public void close() {
-		try {
-			serverSocket.close();
-			clientSocket.close();
-		} catch (IOException e) {
-			e.printStackTrace();
+		if(!closed) {
+			try {
+				if(serverSocket != null) {
+					serverSocket.close();
+				}
+				if(clientSocket != null) {
+					clientSocket.close();
+				}
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+			closed = true;
 		}
 	}
 

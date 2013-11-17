@@ -10,11 +10,13 @@ import java.net.SocketTimeoutException;
 public class UDPServerConnection {
 	
 	private DatagramSocket dataSocket;
+	boolean closed;
 	
 	public UDPServerConnection(int port) {
 		try {
 			dataSocket = new DatagramSocket(port);
 			dataSocket.setSoTimeout(ConnectionUtils.TTL);
+			closed = false;
 		} catch (SocketException e) {
 			e.printStackTrace();
 		} 
@@ -52,7 +54,10 @@ public class UDPServerConnection {
 	}
 	
 	public void close() {
-		dataSocket.close();
+		if(!closed) {
+			dataSocket.close();
+			closed = true;
+		}
 	}
 
 }
