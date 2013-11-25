@@ -5,7 +5,7 @@ joe3701             zzt0215
 CSE 461 A
 README for project 2:
 
-For compilation and running, unzip code.zip and make sure you are in the code directory (the directory with the build.xml file)
+For compilation and running, unzip code.zip and make sure you are in the root directory (the directory with the build.xml file)
 
 Compilation can be performed by running the command: ant compile
 Running: ant
