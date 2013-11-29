@@ -19,6 +19,31 @@ public class ServerThread extends Thread {
 	@Override
 	public void start() {
 		try {
+			/* 
+			 * Step 1: ask the client for a list of files it's
+			 * willing to share.
+			 * TODO
+			 */
+			
+			/* 
+			 * Step 2: provide the client with a list of files
+			 * that it can get from other nodes.
+			 * TODO
+			 */
+			
+			/*
+			 * Step 3: get a filename the client wants.
+			 * Then return the address of a node that has the
+			 * file to the client.
+			 * TODO
+			 */
+			
+			/*
+			 * Step 4: wait for another filename, then proceed 
+			 * with step 3 or receive a disconnect message and
+			 * cleanup.
+			 * TODO
+			 */
 			
 		} finally {
 			cleanUp();
@@ -30,7 +55,9 @@ public class ServerThread extends Thread {
 	 * know that this client cannot transfer files.
 	 */
 	private void cleanUp() {
-		
+		FileFinder finder = FileFinder.getInstance();
+		finder.removeAddress(connection.getHostName());
+		connection.close();
 	}
 
 }

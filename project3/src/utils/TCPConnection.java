@@ -22,6 +22,16 @@ public class TCPConnection {
 		this.socket = socket;
 	}
 	
+	/**
+	 * @return the host name of the destination for this connection.
+	 */
+	public String getHostName() {
+		return socket.getInetAddress().getHostName();
+	}
+	
+	/**
+	 * Sends the message to the recipient.
+	 */
 	public void send(byte[] message) {
 		try {
 			OutputStream out = socket.getOutputStream();
