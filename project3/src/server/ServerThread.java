@@ -25,6 +25,8 @@ public class ServerThread extends Thread {
 			 * TODO
 			 */
 			
+			
+			
 			/* 
 			 * Step 2: provide the client with a list of files
 			 * that it can get from other nodes.
