@@ -6,6 +6,8 @@ import java.nio.ByteOrder;
 public class ConnectionUtils {
 
 	public static final int PORT = 36777;
+	public static final int MAGIC = 0xCAFEF00D;
+	public static final int HEADER_SIZE = 9;
 	
 	/**
 	 * merges 'first' and 'second' into one byte[] that has a length divisible by 4
@@ -22,18 +24,17 @@ public class ConnectionUtils {
 	
 	/**
 	 * Constructs the header for a message.
+	 * The header consists of the magic number at the beginning, followed by the
+	 * length of the payload, ending with the type of contents in the payload.
 	 * @param payload_len the length of the payload of the message
-	 * @param psecret the secret value for the previous stage
-	 * @param step the current step number this message is being sent for
-	 * @param studentNo the student number to use 
+	 * @param type one of the MessageTypes constants containing the type of payload.
 	 * @return a byte[] that contains the header for the packet to be sent.
 	 */
-	public static byte[] constructHeader(int payload_len, int psecret, short step, short studentNo) {
-		ByteBuffer b = ByteBuffer.allocate(12).order(ByteOrder.BIG_ENDIAN);
+	public static byte[] constructHeader(int payload_len, byte type) {
+		ByteBuffer b = ByteBuffer.allocate(HEADER_SIZE).order(ByteOrder.BIG_ENDIAN);
+		b.putInt(MAGIC);
 		b.putInt(payload_len);
-		b.putInt(psecret);
-		b.putShort(step);
-		b.putShort(studentNo);
+		b.put(type);
 		return b.array();
 	}
 	

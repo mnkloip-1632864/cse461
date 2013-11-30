@@ -42,6 +42,9 @@ public class TCPConnection {
 		
 	}
 
+	/**
+	 * Receives a message of the given length. 
+	 */
 	public byte[] receive(int bufferLength) {
 		byte[] buffer = new byte[bufferLength];
 		try {
