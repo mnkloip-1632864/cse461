@@ -29,31 +29,66 @@ public class ServerThread extends Thread {
 			 * Step 1: ask the client for a list of files it's
 			 * willing to share.
 			 */
-			// get the header to find out how big the list is.
+
 			retrieveAndStoreFiles();
+			
 			/* 
 			 * Step 2: provide the client with a list of files
 			 * that it can get from other nodes.
 			 */
+			
 			sendAvailableFiles();
 			
 			/*
 			 * Step 3: get a filename the client wants.
 			 * Then return the address of a node that has the
 			 * file to the client.
-			 * TODO
 			 */
 			
-			/*
-			 * Step 4: wait for another filename, then proceed 
-			 * with step 3 or receive a disconnect message and
-			 * cleanup.
-			 * TODO
-			 */
+			String fileName = getClientFilenameRequest();
+			while(fileName != null) {
+				sendNodeAddressContainingFile(fileName);
+				fileName = getClientFilenameRequest();
+			}
 			
+		} catch (HeaderException e) {
+			System.err.println(e.getMessage());
 		} finally {
 			cleanUp();
 		}
+	}
+
+	private void sendNodeAddressContainingFile(String fileName) {
+		String nodeAddress = FileFinder.getInstance().getAddressFor(fileName);
+		if(nodeAddress == null) {
+			nodeAddress = "null";
+		}
+		byte[] payload = nodeAddress.getBytes();
+		byte[] header = ConnectionUtils.constructHeader(payload.length, MessageType.REQUEST);
+		byte[] message = ConnectionUtils.merge(header, payload);
+		connection.send(message);
+	}
+
+	/**
+	 * @return A String representing the clients request for a file. 
+	 *         Returns null if the client wishes to terminate.
+	 */
+	private String getClientFilenameRequest() {
+		byte[] header = connection.receive(ConnectionUtils.HEADER_SIZE);
+		ByteBuffer buf = ByteBuffer.wrap(header);
+		int magic = buf.getInt(0);
+		if(magic != ConnectionUtils.MAGIC) {
+			throw new HeaderException("Magic number not correct.");
+		}
+		int payloadLen = buf.getInt(4);
+		byte type = buf.get(8);
+		if(type == MessageType.TERMINATE) {
+			return null;
+		} else if(type == MessageType.REQUEST) {
+			byte[] fileName = connection.receive(payloadLen);
+			return new String(fileName);
+		}
+		return null;
 	}
 
 	/**
@@ -72,6 +107,7 @@ public class ServerThread extends Thread {
 	 * Retrieves a list of files that the client is willing to share and store this in the FileFinder.
 	 */
 	private void retrieveAndStoreFiles() {
+		// get the header to find out how big the list is.
 		byte[] header = connection.receive(ConnectionUtils.HEADER_SIZE);
 		ByteBuffer buf = ByteBuffer.wrap(header);
 		int magic = buf.getInt(0);
@@ -81,7 +117,7 @@ public class ServerThread extends Thread {
 		int payloadLen = buf.getInt(4);
 		byte type = buf.get(8);
 		if(type != MessageType.LIST) {
-			throw new HeaderException("need to send a list of elements to the Server first.");
+			throw new HeaderException("Need to send a list of elements to the Server first.");
 		}
 		// get the list
 		byte[] list = connection.receive(payloadLen);
