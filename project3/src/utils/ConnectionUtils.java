@@ -2,6 +2,8 @@ package utils;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
+import java.util.HashSet;
+import java.util.Set;
 
 public class ConnectionUtils {
 
@@ -36,6 +38,36 @@ public class ConnectionUtils {
 		b.putInt(payload_len);
 		b.put(type);
 		return b.array();
+	}
+	
+	/**
+	 * Retrieves Strings representing fileNames from the array of bytes
+	 * @param bytes the array of bytes containing filenames separated by '\0'
+	 * 			    characters. 
+	 * @return a Set containing all of the filenames embedded in the byte array.
+	 */
+	public static Set<String> getFileNames(byte[] bytes) {
+		Set<String> files = new HashSet<String>();
+		StringBuilder sb = new StringBuilder();
+		for (int i = 0; i < bytes.length; i++) {
+			byte b = bytes[i];
+			if(b == 0) {
+				files.add(sb.toString());
+				sb = new StringBuilder();
+			} else {
+				sb.append((char)b);
+			}
+		}
+		return files;
+	}
+	
+	/**
+	 * Construct a byte array containing the Strings in fileNames
+	 * @param fileNames a Set of Strings to be put into the byte array.
+	 * @return a '\0' separated array of bytes representing the fileNames.
+	 */
+	public static byte[] makeFileBytes(Set<String> fileNames) {
+		return null;
 	}
 	
 }

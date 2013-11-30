@@ -1,7 +1,6 @@
 package server;
 
 import java.nio.ByteBuffer;
-import java.util.HashSet;
 import java.util.Set;
 
 import utils.ConnectionUtils;
@@ -31,29 +30,12 @@ public class ServerThread extends Thread {
 			 * willing to share.
 			 */
 			// get the header to find out how big the list is.
-			byte[] header = connection.receive(ConnectionUtils.HEADER_SIZE);
-			ByteBuffer buf = ByteBuffer.wrap(header);
-			int magic = buf.getInt(0);
-			if(magic != ConnectionUtils.MAGIC) {
-				throw new HeaderException("Magic number not correct.");
-			}
-			int payloadLen = buf.getInt(4);
-			byte type = buf.get(8);
-			if(type != MessageType.LIST) {
-				throw new HeaderException("need to send a list of elements to the Server first.");
-			}
-			// get the list
-			byte[] list = connection.receive(payloadLen);
-			Set<String> fileNames = getFileNames(list);
-			// Add the fileNames to the FileFinder to be found at this client
-			FileFinder fileFinder = FileFinder.getInstance();
-			fileFinder.addFilesToAddress(connection.getHostName(), fileNames);
-			
+			retrieveAndStoreFiles();
 			/* 
 			 * Step 2: provide the client with a list of files
 			 * that it can get from other nodes.
-			 * TODO
 			 */
+			sendAvailableFiles();
 			
 			/*
 			 * Step 3: get a filename the client wants.
@@ -73,27 +55,43 @@ public class ServerThread extends Thread {
 			cleanUp();
 		}
 	}
-	
+
 	/**
-	 * Retrieves Strings representing fileNames from the array of bytes
-	 * @param bytes the array of bytes containing filenames separated by '\0'
-	 * 			    characters. 
-	 * @return a Set containing all of the filenames embedded in the byte array.
+	 * Send a Set of available files to the client.
 	 */
-	private Set<String> getFileNames(byte[] bytes) {
-		Set<String> files = new HashSet<String>();
-		StringBuilder sb = new StringBuilder();
-		for (int i = 0; i < bytes.length; i++) {
-			byte b = bytes[i];
-			if(b == 0) {
-				files.add(sb.toString());
-				sb = new StringBuilder();
-			} else {
-				sb.append((char)b);
-			}
-		}
-		return files;
+	private void sendAvailableFiles() {
+		FileFinder fileFinder = FileFinder.getInstance();
+		Set<String> filesToGet = fileFinder.getFileNames();
+		byte[] files = ConnectionUtils.makeFileBytes(filesToGet);
+		byte[] header = ConnectionUtils.constructHeader(files.length, MessageType.LIST);
+		byte[] message = ConnectionUtils.merge(header, files);
+		connection.send(message);
 	}
+
+	/**
+	 * Retrieves a list of files that the client is willing to share and store this in the FileFinder.
+	 */
+	private void retrieveAndStoreFiles() {
+		byte[] header = connection.receive(ConnectionUtils.HEADER_SIZE);
+		ByteBuffer buf = ByteBuffer.wrap(header);
+		int magic = buf.getInt(0);
+		if(magic != ConnectionUtils.MAGIC) {
+			throw new HeaderException("Magic number not correct.");
+		}
+		int payloadLen = buf.getInt(4);
+		byte type = buf.get(8);
+		if(type != MessageType.LIST) {
+			throw new HeaderException("need to send a list of elements to the Server first.");
+		}
+		// get the list
+		byte[] list = connection.receive(payloadLen);
+		Set<String> fileNames = ConnectionUtils.getFileNames(list);
+		// Add the fileNames to the FileFinder to be found at this client
+		FileFinder fileFinder = FileFinder.getInstance();
+		fileFinder.addFilesToAddress(connection.getHostName(), fileNames);
+	}
+	
+	
 
 	/**
 	 * Cleans up the state of this thread and letting the server
