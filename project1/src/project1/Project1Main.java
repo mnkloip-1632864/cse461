@@ -5,7 +5,7 @@ import java.util.Arrays;
 
 public class Project1Main {
 
-	public static final int DEBUG_LEVEL=0;
+	public static final int DEBUG_LEVEL=2;
 	
 	public static void main(String[] args) {
 		// Stage A

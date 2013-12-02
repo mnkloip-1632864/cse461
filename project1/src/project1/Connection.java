@@ -2,7 +2,7 @@ package project1;
 
 public interface Connection {
 	
-	public static final String HOST="bicycle.cs.washington.edu";
+	public static final String HOST="173.250.202.178";
 	public static final int TTL = 500;
 
 	/**
