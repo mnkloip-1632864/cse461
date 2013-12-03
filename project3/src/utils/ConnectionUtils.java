@@ -67,7 +67,11 @@ public class ConnectionUtils {
 	 * @return a '\0' separated array of bytes representing the fileNames.
 	 */
 	public static byte[] makeFileBytes(Set<String> fileNames) {
-		return null;
+		StringBuilder sb = new StringBuilder();
+		for (String fileName : fileNames) {
+			sb.append(fileName + "\0");
+		}
+		return sb.toString().getBytes();
 	}
 	
 }
