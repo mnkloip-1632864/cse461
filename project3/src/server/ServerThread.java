@@ -97,31 +97,14 @@ public class ServerThread extends Thread {
 	private void sendAvailableFiles() {
 		FileFinder fileFinder = FileFinder.getInstance();
 		Set<String> filesToGet = fileFinder.getFileNames();
-		byte[] files = ConnectionUtils.makeFileBytes(filesToGet);
-		byte[] header = ConnectionUtils.constructHeader(files.length, MessageType.LIST);
-		byte[] message = ConnectionUtils.merge(header, files);
-		connection.send(message);
+		ConnectionUtils.sendFileList(connection, filesToGet);
 	}
 
 	/**
 	 * Retrieves a list of files that the client is willing to share and store this in the FileFinder.
 	 */
 	private void retrieveAndStoreFiles() {
-		// get the header to find out how big the list is.
-		byte[] header = connection.receive(ConnectionUtils.HEADER_SIZE);
-		ByteBuffer buf = ByteBuffer.wrap(header);
-		int magic = buf.getInt(0);
-		if(magic != ConnectionUtils.MAGIC) {
-			throw new HeaderException("Magic number not correct.");
-		}
-		int payloadLen = buf.getInt(4);
-		byte type = buf.get(8);
-		if(type != MessageType.LIST) {
-			throw new HeaderException("Need to send a list of elements to the Server first.");
-		}
-		// get the list
-		byte[] list = connection.receive(payloadLen);
-		Set<String> fileNames = ConnectionUtils.getFileNames(list);
+		Set<String> fileNames = ConnectionUtils.getFileList(connection);
 		// Add the fileNames to the FileFinder to be found at this client
 		FileFinder fileFinder = FileFinder.getInstance();
 		fileFinder.addFilesToAddress(connection.getHostName(), fileNames);

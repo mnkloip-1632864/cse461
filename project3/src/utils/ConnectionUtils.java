@@ -75,4 +75,29 @@ public class ConnectionUtils {
 		return sb.toString().getBytes();
 	}
 	
+	public static Set<String> getFileList (TCPConnection connection) {
+		// get the header to find out how big the list is.
+		byte[] header = connection.receive(ConnectionUtils.HEADER_SIZE);
+		ByteBuffer buf = ByteBuffer.wrap(header);
+		int magic = buf.getInt(0);
+		if(magic != ConnectionUtils.MAGIC) {
+			throw new HeaderException("Magic number not correct.");
+		}
+		int payloadLen = buf.getInt(4);
+		byte type = buf.get(8);
+		if(type != MessageType.LIST) {
+			throw new HeaderException("Need to send a list of elements to the Server first.");
+		}
+		// get the list
+		byte[] list = connection.receive(payloadLen);
+		return getFileNames(list);
+	}
+	
+	public static void sendFileList(TCPConnection connection, Set<String> fileNames) {
+		byte[] files = ConnectionUtils.makeFileBytes(fileNames);
+		byte[] header = ConnectionUtils.constructHeader(files.length, MessageType.LIST);
+		byte[] message = ConnectionUtils.merge(header, files);
+		connection.send(message);
+	}
+	
 }
