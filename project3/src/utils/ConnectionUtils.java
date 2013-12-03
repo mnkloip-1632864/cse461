@@ -7,7 +7,8 @@ import java.util.Set;
 
 public class ConnectionUtils {
 
-	public static final int PORT = 36777;
+	public static final int SERVER_PORT = 36777;
+	public static final int FILE_SERVER_PORT = 36877;
 	public static final int MAGIC = 0xCAFEF00D;
 	public static final int HEADER_SIZE = 9;
 	

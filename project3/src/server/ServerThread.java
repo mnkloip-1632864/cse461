@@ -23,7 +23,7 @@ public class ServerThread extends Thread {
 	}
 	
 	@Override
-	public void start() {
+	public void run() {
 		try {
 			/* 
 			 * Step 1: ask the client for a list of files it's

@@ -14,7 +14,7 @@ public class ConnectionPool {
 	private TCPServerConnection serverConnection;
 	
 	public ConnectionPool() {
-		serverConnection = new TCPServerConnection(ConnectionUtils.PORT);
+		serverConnection = new TCPServerConnection(ConnectionUtils.SERVER_PORT);
 	}
 	
 	public void start() {
