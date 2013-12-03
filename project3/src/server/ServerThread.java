@@ -76,10 +76,7 @@ public class ServerThread extends Thread {
 	private String getClientFilenameRequest() {
 		byte[] header = connection.receive(ConnectionUtils.HEADER_SIZE);
 		ByteBuffer buf = ByteBuffer.wrap(header);
-		int magic = buf.getInt(0);
-		if(magic != ConnectionUtils.MAGIC) {
-			throw new HeaderException("Magic number not correct.");
-		}
+		ConnectionUtils.checkMagic(buf);
 		int payloadLen = buf.getInt(4);
 		byte type = buf.get(8);
 		if(type == MessageType.TERMINATE) {

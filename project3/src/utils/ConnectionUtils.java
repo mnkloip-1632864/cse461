@@ -79,10 +79,7 @@ public class ConnectionUtils {
 		// get the header to find out how big the list is.
 		byte[] header = connection.receive(ConnectionUtils.HEADER_SIZE);
 		ByteBuffer buf = ByteBuffer.wrap(header);
-		int magic = buf.getInt(0);
-		if(magic != ConnectionUtils.MAGIC) {
-			throw new HeaderException("Magic number not correct.");
-		}
+		checkMagic(buf);
 		int payloadLen = buf.getInt(4);
 		byte type = buf.get(8);
 		if(type != MessageType.LIST) {
@@ -98,6 +95,13 @@ public class ConnectionUtils {
 		byte[] header = ConnectionUtils.constructHeader(files.length, MessageType.LIST);
 		byte[] message = ConnectionUtils.merge(header, files);
 		connection.send(message);
+	}
+	
+	public static void checkMagic(ByteBuffer buf) {
+		int magic = buf.getInt(0);
+		if(magic != ConnectionUtils.MAGIC) {
+			throw new HeaderException("Magic number not correct.");
+		}
 	}
 	
 }
