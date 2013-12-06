@@ -1,9 +1,7 @@
 package client;
 
 import java.io.File;
-import java.net.ConnectException;
 import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
 import java.util.HashSet;
 import java.util.Scanner;
 import java.util.Set;
@@ -23,20 +21,20 @@ public class ClientMain {
 		connection = new TCPConnection(SERVER_ADDR, ConnectionUtils.SERVER_PORT);
 	    Set<String> filesHad = sendFileList();
 	    Set<String> filesAvailable = getAndShowAvailableFiles();
+	    Scanner s = new Scanner(System.in);
 		while (true) {
-			System.out.print("Please type in the file name of the file you want " +
+			System.out.print("Please type in the name of the file you want " +
 					"to get (Press Ctrl-D to quit the program): ");
-			Scanner s = new Scanner(System.in);
 			if (s.hasNext()) {
 				String fileToGet = s.next();
 				// Check that whether the user actually has the file locally. 
 				if (filesHad.contains(fileToGet)) {
-					System.out.println("The file is currently in store on the local machine.");
-					continue;
+					System.out.println("The file is currently stored on your local machine.");
+					//continue;
 				} 
 				// Check that the user requested file actually matches one of the files available to get
 				else if (!filesAvailable.contains(fileToGet)) {
-					System.out.println("The input file name does not match to any of the available files.");
+					System.out.println("The input file name does not match any of the available files.");
 				}
 				
 				/*
@@ -49,7 +47,7 @@ public class ClientMain {
 				 */
 				String nodeIp = getFileLocation();
 				
-				
+				System.out.println("nodeIp = " + nodeIp);
 								
 			} else {
 				byte[] header = ConnectionUtils.constructHeader(0, MessageType.TERMINATE);
@@ -58,6 +56,7 @@ public class ClientMain {
 				break;
 			}
 		}
+		s.close();
 	}
 	
 	/**
@@ -83,7 +82,7 @@ public class ClientMain {
 	 */
 	public static void requestFile(String fileToGet) {
 		byte[] header = ConnectionUtils.constructHeader(fileToGet.length(), MessageType.REQUEST);
-		byte[] message = ConnectionUtils.merge(fileToGet.getBytes(), header);
+		byte[] message = ConnectionUtils.merge(header, fileToGet.getBytes());
 		connection.send(message);
 	}
 	
@@ -123,6 +122,7 @@ public class ClientMain {
 			}
 			i++;
 		}
+		System.out.println();
 		return fileNames;
 	}
 	

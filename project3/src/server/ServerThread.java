@@ -29,7 +29,7 @@ public class ServerThread extends Thread {
 			 * Step 1: ask the client for a list of files it's
 			 * willing to share.
 			 */
-
+			System.out.println("Connection established with client. Requesting files.");
 			retrieveAndStoreFiles();
 			
 			/* 

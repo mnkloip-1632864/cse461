@@ -2,6 +2,7 @@ package utils;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -93,14 +94,14 @@ public class ConnectionUtils {
 	public static void sendFileList(TCPConnection connection, Set<String> fileNames) {
 		byte[] files = ConnectionUtils.makeFileBytes(fileNames);
 		byte[] header = ConnectionUtils.constructHeader(files.length, MessageType.LIST);
-		byte[] message = ConnectionUtils.merge(header, files);
+		byte[] message = ConnectionUtils.merge(header, files);		
 		connection.send(message);
 	}
 	
 	public static void checkMagic(ByteBuffer buf) {
 		int magic = buf.getInt(0);
 		if(magic != ConnectionUtils.MAGIC) {
-			throw new HeaderException("Magic number not correct.");
+			throw new HeaderException("Magic number not correct. Expected: " + MAGIC + ", but received: " + magic);
 		}
 	}
 	
