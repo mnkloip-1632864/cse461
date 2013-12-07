@@ -15,10 +15,11 @@ public class ClientMain {
 	private static final String FILE_LOCATION = "../files";
 	private static final String SERVER_ADDR = "localhost";
 	private static final int NAMES_PER_LINE = 3;
-	private static TCPConnection connection;
-
+	private static TCPConnection connectionToServer;
+	private static TCPConnection connectionToPeer;
+	
 	public static void main(String[] args) {
-		connection = new TCPConnection(SERVER_ADDR, ConnectionUtils.SERVER_PORT);
+		connectionToServer = new TCPConnection(SERVER_ADDR, ConnectionUtils.SERVER_PORT);
 	    Set<String> filesHad = sendFileList();
 	    Set<String> filesAvailable = getAndShowAvailableFiles();
 	    Scanner s = new Scanner(System.in);
@@ -48,15 +49,38 @@ public class ClientMain {
 				String nodeIp = getFileLocation();
 				
 				System.out.println("nodeIp = " + nodeIp);
-								
+				
+				/*
+				 * Retrive file from the peer
+				 */
+				connectionToPeer = new TCPConnection(nodeIp, ConnectionUtils.FILE_SERVER_PORT);
+				sendFileName(fileToGet);
+				
+				
 			} else {
 				byte[] header = ConnectionUtils.constructHeader(0, MessageType.TERMINATE);
-				connection.send(header);
-				connection.close();
+				connectionToServer.send(header);
+				connectionToServer.close();
 				break;
 			}
 		}
 		s.close();
+	}
+	
+	public static FileMapping getFileMapping() {
+		// TODO
+		return null;
+	}
+	
+	/**
+	 * Send the file name to the source
+	 * @param fileToGet
+	 */
+	public static void sendFileName(String fileToGet) {
+		byte[] fileName = fileToGet.getBytes();
+		byte[] header = ConnectionUtils.constructHeader(fileName.length, MessageType.FILE_META);
+		byte[] message = ConnectionUtils.merge(header, fileName);
+		connectionToPeer.send(message);
 	}
 	
 	/**
@@ -64,13 +88,13 @@ public class ClientMain {
 	 * @return the ip address of the node that has the requested file. 
 	 */
 	public static String getFileLocation() {
-		byte[] header = connection.receive(ConnectionUtils.HEADER_SIZE);
+		byte[] header = connectionToServer.receive(ConnectionUtils.HEADER_SIZE);
 		ByteBuffer buf = ByteBuffer.wrap(header);
 		ConnectionUtils.checkMagic(buf);
 		int payloadLen = buf.getInt(4);
 		byte type = buf.get(8);
 		if (type == MessageType.REQUEST) {
-			byte[] nodeIp = connection.receive(payloadLen);
+			byte[] nodeIp = connectionToServer.receive(payloadLen);
 			return new String(nodeIp);
 		}
 		return null;
@@ -83,7 +107,7 @@ public class ClientMain {
 	public static void requestFile(String fileToGet) {
 		byte[] header = ConnectionUtils.constructHeader(fileToGet.length(), MessageType.REQUEST);
 		byte[] message = ConnectionUtils.merge(header, fileToGet.getBytes());
-		connection.send(message);
+		connectionToServer.send(message);
 	}
 	
 	/**
@@ -99,7 +123,7 @@ public class ClientMain {
 		for (File file: availableFiles) {
 			fileNames.add(file.getName());
 		}
-		ConnectionUtils.sendFileList(connection, fileNames);
+		ConnectionUtils.sendFileList(connectionToServer, fileNames);
 		return fileNames;
 	}
 	
@@ -109,7 +133,7 @@ public class ClientMain {
 	 *         name of a file that is available in the remote machine. 
 	 */
 	public static Set<String> getAndShowAvailableFiles() {
-		Set<String> fileNames = ConnectionUtils.getFileList(connection);
+		Set<String> fileNames = ConnectionUtils.getFileList(connectionToServer);
 		System.out.println("Available files are shown below: ");
 		int i = 0;
 		for (String fileName: fileNames) {

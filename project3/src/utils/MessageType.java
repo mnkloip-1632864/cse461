@@ -8,4 +8,5 @@ public class MessageType {
 	public static final byte LIST = 0;      // Message is a list of Strings
 	public static final byte REQUEST = 1;   // Message is a file request
 	public static final byte TERMINATE = 2; // Message is to terminate
+	public static final byte FILE_META = 3; // Message is the meta data of the file
 }
