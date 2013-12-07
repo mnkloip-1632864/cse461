@@ -121,9 +121,9 @@ public class FileServerThread extends Thread {
 					}
 					numBytesRead += bytesRead; 
 				}
-				byte[] header = ConnectionUtils.constructHeader(chunk.length, MessageType.FILE_DATA);
+				byte[] header = ConnectionUtils.constructHeader(numBytesRead, MessageType.FILE_DATA);
 				byte[] message = ConnectionUtils.merge(header, chunk);
-				connection.send(message);
+				connection.send(message, header.length + numBytesRead);
 			}
 		} catch (IOException e) {
 			throw new FileTransmissionException();

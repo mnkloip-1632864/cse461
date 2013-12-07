@@ -33,13 +33,24 @@ public class TCPConnection {
 	 * Sends the message to the recipient.
 	 */
 	public void send(byte[] message) {
+		send(message, message.length);
+	}
+	
+	public void send(byte[] message, int length) {
 		try {
 			OutputStream out = socket.getOutputStream();
-			out.write(message);
+			if(length < message.length) {
+				byte[] smess = new byte[length];
+				for (int i = 0; i < smess.length; i++) {
+					smess[i] = message[i];
+				}
+				out.write(smess);
+			} else {
+				out.write(message);
+			}
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		
 	}
 
 	/**
