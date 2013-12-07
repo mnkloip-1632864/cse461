@@ -2,13 +2,15 @@ package client;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * The FileMapping contains a mapping between file names
  * and where on the local disk they are currently stored.
  */
 public class FileMapping {
-	public Map<String, String> files; // Filename -> path
+	
+	private Map<String, String> files; // Filename -> path
 	
 	public FileMapping() {
 		files = new HashMap<String, String>();
@@ -20,7 +22,7 @@ public class FileMapping {
 	 * 		  the 'filePath'
 	 * @param filePath the path on the local machine to the file.
 	 */
-	public void addFile(String filename, String filePath) {
+	public synchronized void addFile(String filename, String filePath) {
 		files.put(filename, filePath);
 	}
 	
@@ -31,7 +33,11 @@ public class FileMapping {
 	 * 		   'filename'. Returns null if the file isn't in the
 	 * 		   FileMapping.
 	 */
-	public String getPath(String filename) {
+	public synchronized String getPath(String filename) {
 		return files.get(filename);
+	}
+	
+	public synchronized Set<String> getAvailableFilenames() {
+		return files.keySet();
 	}
 }

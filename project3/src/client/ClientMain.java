@@ -6,7 +6,6 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
-import java.util.HashSet;
 import java.util.Scanner;
 import java.util.Set;
 
@@ -20,12 +19,24 @@ public class ClientMain {
 	private static final String FILE_LOCATION = ".." + File.pathSeparator + "files";
 	private static final String SERVER_ADDR = "localhost";
 	private static final int NAMES_PER_LINE = 3;
+	
 	private static TCPConnection connectionToServer;
 	private static TCPConnection connectionToPeer;
+	private static FileMapping fileMap;
 	
 	public static void main(String[] args) {
+		// Start the local FileServer
+		FileServer fs = new FileServer();
+		fs.start();
+		
+		// Setup the local fileMapping
+		fileMap = new FileMapping();
 		connectionToServer = new TCPConnection(SERVER_ADDR, ConnectionUtils.SERVER_PORT);
-	    Set<String> filesHad = sendFileList();
+		populateFileMap();
+		Set<String> localFiles = fileMap.getAvailableFilenames();
+		
+		// Send the server the list of files that we can share.
+		ConnectionUtils.sendFileList(connectionToServer, localFiles);
 	    Set<String> filesAvailable = getAndShowAvailableFiles();
 	    Scanner s = new Scanner(System.in);
 		while (true) {
@@ -34,7 +45,7 @@ public class ClientMain {
 			if (s.hasNext()) {
 				String fileToGet = s.next();
 				// Check that whether the user actually has the file locally. 
-				if (filesHad.contains(fileToGet)) {
+				if (localFiles.contains(fileToGet)) {
 					System.out.println("The file is currently stored on your local machine.");
 					//continue;
 				} 
@@ -83,7 +94,6 @@ public class ClientMain {
 						throw new FileTransmissionException("Chunk size received is incorrect.");
 					}
 				} catch (FileTransmissionException e) {
-					// TODO Auto-generated catch block
 					cleanupPeerConn("File meta data received is incorrect!");
 					e.printStackTrace();
 				}
@@ -101,6 +111,17 @@ public class ClientMain {
 		s.close();
 	}
 	
+	/**
+	 * Populates the fileMap to hold the files to be shared by this machine.
+	 */
+	private static void populateFileMap() {
+		File dir = new File(FILE_LOCATION);
+		File[] availableFiles = dir.listFiles();
+		for (File file : availableFiles) {
+			fileMap.addFile(file.getName(), file.getPath());
+		}
+	}
+
 	public static void retrieveAndStoreFile(long fileSize, int numChunks, int chunkSize, String fileToGet) {
 		long bytesReceived = 0;
 		BufferedOutputStream bufferedOut = null;
@@ -126,10 +147,8 @@ public class ClientMain {
 			}
 			
 		} catch (FileNotFoundException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} finally {
 			if (bufferedOut != null) {
@@ -164,15 +183,13 @@ public class ClientMain {
 	}
 	
 	public static void cleanupPeerConn(String message) {
-		// TODO
 		byte[] terminate = ConnectionUtils.constructTerminateMessage(message);
 		connectionToPeer.send(terminate);
 		connectionToPeer.close();
 	}
 	
 	public static FileMapping getFileMapping() {
-		// TODO
-		return null;
+		return fileMap;
 	}
 	
 	/**
@@ -211,23 +228,6 @@ public class ClientMain {
 		byte[] header = ConnectionUtils.constructHeader(fileToGet.length(), MessageType.REQUEST);
 		byte[] message = ConnectionUtils.merge(header, fileToGet.getBytes());
 		connectionToServer.send(message);
-	}
-	
-	/**
-	 * Send the available files in the client. 
-	 * @return a set of String where each of the String represents the file
-	 *         name of a file that currently available on the client
-	 */
-	public static Set<String> sendFileList() {
-		File dir = new File(FILE_LOCATION);
-		File[] availableFiles = dir.listFiles();
-		Set<String> fileNames = new HashSet<String>();
-		// try to put all files in the same directory for simplicity
-		for (File file: availableFiles) {
-			fileNames.add(file.getName());
-		}
-		ConnectionUtils.sendFileList(connectionToServer, fileNames);
-		return fileNames;
 	}
 	
 	/**
