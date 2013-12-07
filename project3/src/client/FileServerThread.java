@@ -1,7 +1,11 @@
 package client;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 
 import utils.ConnectionUtils;
 import utils.HeaderException;
@@ -25,19 +29,21 @@ public class FileServerThread extends Thread {
 		try {
 			// Receive the name of the file to transmit
 			String fileName = receiveFileName();
-			
+
 			// Get the file path on the local machine, letting the user 
 			// know if the file does not exist.
 			File f = retrieveFile(fileName);
-			
+
 			// If the file exists, transmit it.
 			transmitFile(f);
-			
-		} catch(FileRetrievalException fre) {
+
+		} catch(FileRetrievalException e) {
 			// the file the client requested cannot be found, tell the client
 			sendFileNotFound();
-		} catch(HeaderException he) {
-			System.err.println("HeaderError: " + he.toString());
+		} catch(FileTransmissionException e) {
+			sendFileTransmissionError();
+		} catch(HeaderException e) {
+			System.err.println("HeaderError: " + e.toString());
 		} finally {
 			connection.close();
 		}
@@ -59,7 +65,7 @@ public class FileServerThread extends Thread {
 		byte[] filename = connection.receive(payloadLen);
 		return new String(filename);
 	}
-	
+
 	/**
 	 * Looks up the fileName, returning a File instance for the file if one exists.
 	 * @param fileName the name of the file to look up.
@@ -75,23 +81,75 @@ public class FileServerThread extends Thread {
 		}
 		return new File(filePath);
 	}
-	
+
 	/**
 	 * Transmits the contents of 'f' to the client. It sends the file to the client
 	 * in CHUNK_SIZE chunks.
 	 * @param f the file to transmit
+	 * @throws FileRetrievalException if transmission fails.
 	 */
-	private void transmitFile(File f) {
-		// TODO Auto-generated method stub
-		
+	private void transmitFile(File f) throws FileTransmissionException {
+		// Construct and send the file metadata
+		long fileSize = f.getTotalSpace();
+		int numChunks = (int) (fileSize / FileServer.CHUNK_SIZE) + 1;
+		ByteBuffer buf = ByteBuffer.allocate(16).order(ByteOrder.BIG_ENDIAN);
+		buf.putLong(fileSize).putInt(numChunks).putInt(FileServer.CHUNK_SIZE);
+		byte[] payload = buf.array();
+		byte[] header = ConnectionUtils.constructHeader(payload.length, MessageType.FILE_META);
+		byte[] message = ConnectionUtils.merge(header, payload);
+		connection.send(message);
+		// send the file in CHUNK_SIZE chunks.
+		sendFileContents(f, numChunks);
+
 	}
-	
+	/**
+	 * Sends the contents of the File in numChunks number of chunks.
+	 * @throws FileTransmissionException if a problem with I/O occurs.
+	 */
+	private void sendFileContents(File f, int numChunks)
+			throws FileTransmissionException {
+		InputStream input = null;
+		try {
+			input = new FileInputStream(f);
+			for(int i = 0; i < numChunks; i++) {
+				byte[] chunk = new byte[FileServer.CHUNK_SIZE];
+				int numBytesRead = 0;
+				while(numBytesRead != FileServer.CHUNK_SIZE) {
+					int bytesRead = input.read(chunk, numBytesRead, FileServer.CHUNK_SIZE - numBytesRead);
+					if(bytesRead == -1) {
+						break;
+					}
+					numBytesRead += bytesRead; 
+				}
+				byte[] header = ConnectionUtils.constructHeader(chunk.length, MessageType.FILE_DATA);
+				byte[] message = ConnectionUtils.merge(header, chunk);
+				connection.send(message);
+			}
+		} catch (IOException e) {
+			throw new FileTransmissionException();
+		} finally {
+			if(input != null) {
+				try {
+					input.close();
+				} catch (IOException e) {}
+			}
+		}
+	}
+
+	/**
+	 * Sends a termination message to the client stating that there was an I/O problem
+	 */
+	private void sendFileTransmissionError() {
+		byte[] message = ConnectionUtils.constructTerminateMessage("Error: I/O problems on source node.");
+		connection.send(message);
+	}
+
 	/**
 	 * Lets the client know that the requested file could not be found.
 	 */
 	private void sendFileNotFound() {
-		// TODO Auto-generated method stub
-		
+		byte[] message = ConnectionUtils.constructTerminateMessage("Error: File Not Found");
+		connection.send(message);
 	}
 
 }

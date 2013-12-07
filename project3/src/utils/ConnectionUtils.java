@@ -97,6 +97,18 @@ public class ConnectionUtils {
 		connection.send(message);
 	}
 	
+	/**
+	 * Constructs a termination message with the given message.
+	 * @param message the message to send along with the termination.
+	 * 		  Can be an error message, or some sort of debugging message.
+	 * @return a byte[] that contains the header and the message.
+	 */
+	public static byte[] constructTerminateMessage(String message) {
+		byte[] payload = message.getBytes();
+		byte[] header = constructHeader(payload.length, MessageType.TERMINATE);
+		return merge(header, payload);
+	}
+	
 	public static void checkMagic(ByteBuffer buf) {
 		int magic = buf.getInt(0);
 		if(magic != ConnectionUtils.MAGIC) {
