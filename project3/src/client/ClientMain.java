@@ -6,6 +6,7 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.util.Arrays;
 import java.util.Scanner;
 import java.util.Set;
 
@@ -15,30 +16,31 @@ import utils.MessageType;
 import utils.TCPConnection;
 
 public class ClientMain {
-	
-	private static final String FILE_LOCATION = ".." + File.pathSeparator + "files";
+
+	private static final String INPUT_FILE_LOCATION = ".." + File.separator + "inputFiles";
+	private static final String OUTPUT_FILE_LOCATION = ".." + File.separator + "receivedFiles";
 	private static final String SERVER_ADDR = "localhost";
 	private static final int NAMES_PER_LINE = 3;
-	
+
 	private static TCPConnection connectionToServer;
 	private static TCPConnection connectionToPeer;
 	private static FileMapping fileMap;
-	
+
 	public static void main(String[] args) {
 		// Start the local FileServer
 		FileServer fs = new FileServer();
 		fs.start();
-		
+
 		// Setup the local fileMapping
 		fileMap = new FileMapping();
 		connectionToServer = new TCPConnection(SERVER_ADDR, ConnectionUtils.SERVER_PORT);
 		populateFileMap();
 		Set<String> localFiles = fileMap.getAvailableFilenames();
-		
+
 		// Send the server the list of files that we can share.
 		ConnectionUtils.sendFileList(connectionToServer, localFiles);
-	    Set<String> filesAvailable = getAndShowAvailableFiles();
-	    Scanner s = new Scanner(System.in);
+		Set<String> filesAvailable = getAndShowAvailableFiles();
+		Scanner s = new Scanner(System.in);
 		while (true) {
 			System.out.print("Please type in the name of the file you want " +
 					"to get (Press Ctrl-D to quit the program): ");
@@ -53,39 +55,42 @@ public class ClientMain {
 				else if (!filesAvailable.contains(fileToGet)) {
 					System.out.println("The input file name does not match any of the available files.");
 				}
-				
+
 				/*
 				 * get the file location of the file user requested  
 				 */
 				requestFile(fileToGet);
-				
+
 				/*
 				 * get the ip address of the node that has the requested file
 				 */
 				String nodeIp = getFileLocation();
-				
+
 				System.out.println("nodeIp = " + nodeIp);
-				
+
 				/*
 				 * Retrive file from the peer
 				 */
 				connectionToPeer = new TCPConnection(nodeIp, ConnectionUtils.FILE_SERVER_PORT);
 				sendFileName(fileToGet);
-				
+
 				byte[] fileMeta = getFileMeta();
 				if (fileMeta == null) {
 					connectionToPeer.close();
 					break;
 				}
 				ByteBuffer data = ByteBuffer.wrap(fileMeta);
-				
+
 				long fileSize = data.getLong(0);
 				int numChunks = data.getInt(8);
 				int chunkSize = data.getInt(12);
+				
+				System.out.println("NumChunks = " + numChunks); //TODO
+				
 				try {
 					if (fileSize <= 0) {
 						throw new FileTransmissionException("File size received is incorrect.");
-						
+
 					}
 					if (numChunks <= 0) {
 						throw new FileTransmissionException("Num chunks received is incorrect.");
@@ -97,10 +102,10 @@ public class ClientMain {
 					cleanupPeerConn("File meta data received is incorrect!");
 					e.printStackTrace();
 				}
-				
+
 				// retrieve the file and store it to disk
 				retrieveAndStoreFile(fileSize, numChunks, chunkSize, fileToGet);
-				
+
 			} else {
 				byte[] terminate = ConnectionUtils.constructTerminateMessage("User is done!");
 				connectionToServer.send(terminate);
@@ -110,12 +115,12 @@ public class ClientMain {
 		}
 		s.close();
 	}
-	
+
 	/**
 	 * Populates the fileMap to hold the files to be shared by this machine.
 	 */
 	private static void populateFileMap() {
-		File dir = new File(FILE_LOCATION);
+		File dir = new File(INPUT_FILE_LOCATION);
 		File[] availableFiles = dir.listFiles();
 		for (File file : availableFiles) {
 			fileMap.addFile(file.getName(), file.getPath());
@@ -126,10 +131,13 @@ public class ClientMain {
 		long bytesReceived = 0;
 		BufferedOutputStream bufferedOut = null;
 		try {
-			FileOutputStream out = new FileOutputStream(FILE_LOCATION + File.pathSeparator + fileToGet);
+			FileOutputStream out = new FileOutputStream(OUTPUT_FILE_LOCATION + File.separator + fileToGet);
 			bufferedOut = new BufferedOutputStream(out);
 			for (int i = 0; i < numChunks; i++) {
 				byte[] header = connectionToPeer.receive(ConnectionUtils.HEADER_SIZE);
+				
+				System.out.println("Header received: " + Arrays.toString(header)); //TODO
+				
 				ByteBuffer buf = ByteBuffer.wrap(header);
 				ConnectionUtils.checkMagic(buf);
 				int payloadLen = buf.getInt(4);
@@ -145,7 +153,7 @@ public class ClientMain {
 					throw new HeaderException("Wrong message type!");
 				}
 			}
-			
+
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();
 		} catch (IOException e) {
@@ -158,9 +166,9 @@ public class ClientMain {
 				} catch (IOException e) {}
 			}
 		}
-		
+
 	}
-	
+
 	public static byte[] getFileMeta() {
 		byte[] header = connectionToPeer.receive(ConnectionUtils.HEADER_SIZE);
 		ByteBuffer buf = ByteBuffer.wrap(header);
@@ -168,7 +176,7 @@ public class ClientMain {
 		int payloadLen = buf.getInt(4);
 		byte type = buf.get(8);
 		byte[] message = connectionToPeer.receive(payloadLen);
-		
+
 		if (type == MessageType.TERMINATE) {
 			System.out.println("Transmission terminated: " + new String(message));
 		} else if (type == MessageType.FILE_META) {
@@ -181,28 +189,28 @@ public class ClientMain {
 		}
 		return null;
 	}
-	
+
 	public static void cleanupPeerConn(String message) {
 		byte[] terminate = ConnectionUtils.constructTerminateMessage(message);
 		connectionToPeer.send(terminate);
 		connectionToPeer.close();
 	}
-	
+
 	public static FileMapping getFileMapping() {
 		return fileMap;
 	}
-	
+
 	/**
 	 * Send the file name to the source
 	 * @param fileToGet
 	 */
 	public static void sendFileName(String fileToGet) {
 		byte[] fileName = fileToGet.getBytes();
-		byte[] header = ConnectionUtils.constructHeader(fileName.length, MessageType.FILE_META);
+		byte[] header = ConnectionUtils.constructHeader(fileName.length, MessageType.REQUEST);
 		byte[] message = ConnectionUtils.merge(header, fileName);
 		connectionToPeer.send(message);
 	}
-	
+
 	/**
 	 * Get the IP address of the node that has the requested file. 
 	 * @return the ip address of the node that has the requested file. 
@@ -219,7 +227,7 @@ public class ClientMain {
 		}
 		return null;
 	}
-	
+
 	/**
 	 * Send server request to get ip of the node that has the file
 	 * @param fileToGet the file name that the client wants
@@ -229,7 +237,7 @@ public class ClientMain {
 		byte[] message = ConnectionUtils.merge(header, fileToGet.getBytes());
 		connectionToServer.send(message);
 	}
-	
+
 	/**
 	 * Get the list of files that are available for download. 
 	 * @return a set of String where each of the String represents the file
@@ -252,7 +260,7 @@ public class ClientMain {
 		System.out.println();
 		return fileNames;
 	}
-	
-	
+
+
 
 }
