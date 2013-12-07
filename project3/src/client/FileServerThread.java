@@ -90,7 +90,7 @@ public class FileServerThread extends Thread {
 	 */
 	private void transmitFile(File f) throws FileTransmissionException {
 		// Construct and send the file metadata
-		long fileSize = f.getTotalSpace();
+		long fileSize = f.length();
 		int numChunks = (int) (fileSize / FileServer.CHUNK_SIZE) + 1;
 		ByteBuffer buf = ByteBuffer.allocate(16).order(ByteOrder.BIG_ENDIAN);
 		buf.putLong(fileSize).putInt(numChunks).putInt(FileServer.CHUNK_SIZE);
