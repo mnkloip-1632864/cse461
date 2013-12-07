@@ -1,7 +1,11 @@
 package client;
 
 import java.io.File;
+import java.nio.ByteBuffer;
 
+import utils.ConnectionUtils;
+import utils.HeaderException;
+import utils.MessageType;
 import utils.TCPConnection;
 
 /**
@@ -32,6 +36,8 @@ public class FileServerThread extends Thread {
 		} catch(FileRetrievalException fre) {
 			// the file the client requested cannot be found, tell the client
 			sendFileNotFound();
+		} catch(HeaderException he) {
+			System.err.println("HeaderError: " + he.toString());
 		} finally {
 			connection.close();
 		}
@@ -42,8 +48,16 @@ public class FileServerThread extends Thread {
 	 * @return the name of the file to transmit.
 	 */
 	private String receiveFileName() {
-		// TODO Auto-generated method stub
-		return null;
+		byte[] header = connection.receive(ConnectionUtils.HEADER_SIZE);
+		ByteBuffer bb = ByteBuffer.wrap(header);
+		ConnectionUtils.checkMagic(bb);
+		int payloadLen = bb.getInt(4);
+		byte type = bb.get(8);
+		if(type != MessageType.REQUEST) {
+			throw new HeaderException("Need to send a filename request to the source first.");
+		}
+		byte[] filename = connection.receive(payloadLen);
+		return new String(filename);
 	}
 	
 	/**
@@ -54,8 +68,12 @@ public class FileServerThread extends Thread {
 	 * 		   exist or the file is no longer on disk at the mapped location).
 	 */
 	private File retrieveFile(String fileName) throws FileRetrievalException {
-		// TODO Auto-generated method stub
-		return null;
+		FileMapping fileMap = ClientMain.getFileMapping();
+		String filePath = fileMap.getPath(fileName);
+		if(filePath == null) {
+			throw new FileRetrievalException();
+		}
+		return new File(filePath);
 	}
 	
 	/**
