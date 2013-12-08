@@ -9,7 +9,7 @@ import utils.TCPServerConnection;
  */
 public class FileServer extends Thread {
 	
-	public static final int CHUNK_SIZE = 10000;
+	public static final int CHUNK_SIZE = 1000;
 	
 	private TCPServerConnection fileServer;
 	
