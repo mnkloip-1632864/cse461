@@ -134,6 +134,9 @@ public class FileServerThread extends Thread {
 					if(bytesRead == -1) {
 						break;
 					}
+					try {
+						Thread.sleep(1);
+					} catch (InterruptedException e) {}
 				}
 				if(numBytesRead < 0) {
 					numBytesRead = 0;
