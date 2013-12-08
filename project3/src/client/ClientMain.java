@@ -149,7 +149,7 @@ public class ClientMain {
 			for (int i = 0; i < numChunks; i++) {
 				byte[] header = connectionToPeer.receive(ConnectionUtils.HEADER_SIZE);
 				
-				System.out.println("Header received: " + Arrays.toString(header)); //TODO
+				System.out.println(i + "th header received: " + Arrays.toString(header)); //TODO
 				
 				ByteBuffer buf = ByteBuffer.wrap(header);
 				ConnectionUtils.checkMagic(buf);
@@ -157,7 +157,7 @@ public class ClientMain {
 				byte type = buf.get(8);
 				byte[] message = connectionToPeer.receive(payloadLen);
 				
-				log.println("received:" + Arrays.toString(header) + Arrays.toString(message)); //TODO
+				log.println(i + "th received:" + Arrays.toString(header) + Arrays.toString(message)); //TODO
 				
 				
 				if (type == MessageType.TERMINATE) {
