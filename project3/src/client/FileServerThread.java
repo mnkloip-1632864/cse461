@@ -140,10 +140,13 @@ public class FileServerThread extends Thread {
 				}
 				byte[] header = ConnectionUtils.constructHeader(numBytesRead, MessageType.FILE_DATA);
 				byte[] message = ConnectionUtils.merge(header, chunk);
-				
+				System.out.println("Sending " + i + ": " + Arrays.toString(header));
 				out.println("Sending: " + Arrays.toString(header) + Arrays.toString(chunk));//TODO
 				
 				connection.send(message, header.length + numBytesRead);
+				try {
+					Thread.sleep(10);
+				} catch (InterruptedException e) {}
 			}
 		} catch (IOException e) {
 			throw new FileTransmissionException();
