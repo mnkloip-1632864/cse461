@@ -135,6 +135,9 @@ public class FileServerThread extends Thread {
 						break;
 					}
 				}
+				if(numBytesRead < 0) {
+					numBytesRead = 0;
+				}
 				byte[] header = ConnectionUtils.constructHeader(numBytesRead, MessageType.FILE_DATA);
 				byte[] message = ConnectionUtils.merge(header, chunk);
 				
