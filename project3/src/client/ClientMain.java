@@ -5,6 +5,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.PrintStream;
 import java.nio.ByteBuffer;
 import java.util.Arrays;
 import java.util.Scanner;
@@ -25,8 +26,20 @@ public class ClientMain {
 	private static TCPConnection connectionToServer;
 	private static TCPConnection connectionToPeer;
 	private static FileMapping fileMap;
+	
+	private static PrintStream log; //TODO
+	
 
 	public static void main(String[] args) {
+		
+		try {
+			log = new PrintStream(new File("log.txt"));
+		} catch (FileNotFoundException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
+		
+		
 		// Start the local FileServer
 		FileServer fs = new FileServer();
 		fs.start();
@@ -143,6 +156,10 @@ public class ClientMain {
 				int payloadLen = buf.getInt(4);
 				byte type = buf.get(8);
 				byte[] message = connectionToPeer.receive(payloadLen);
+				
+				log.println("received:" + Arrays.toString(header) + Arrays.toString(message)); //TODO
+				
+				
 				if (type == MessageType.TERMINATE) {
 					System.out.println(new String(message));
 					return;

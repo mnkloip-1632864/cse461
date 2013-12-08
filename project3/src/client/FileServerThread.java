@@ -2,10 +2,13 @@ package client;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.PrintStream;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
+import java.util.Arrays;
 
 import utils.ConnectionUtils;
 import utils.HeaderException;
@@ -19,6 +22,9 @@ import utils.TCPConnection;
 public class FileServerThread extends Thread {
 
 	private TCPConnection connection;
+	
+	PrintStream out; //TODO
+	
 
 	public FileServerThread(TCPConnection connection) {
 		this.connection = connection;
@@ -27,6 +33,14 @@ public class FileServerThread extends Thread {
 	@Override
 	public void run() {
 		try {
+			
+			try {
+				out = new PrintStream(new File("log.txt"));
+			} catch (FileNotFoundException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			
 			// Receive the name of the file to transmit
 			String fileName = receiveFileName();
 
@@ -123,6 +137,9 @@ public class FileServerThread extends Thread {
 				}
 				byte[] header = ConnectionUtils.constructHeader(numBytesRead, MessageType.FILE_DATA);
 				byte[] message = ConnectionUtils.merge(header, chunk);
+				
+				out.println("Sending: " + Arrays.toString(header) + Arrays.toString(chunk));//TODO
+				
 				connection.send(message, header.length + numBytesRead);
 			}
 		} catch (IOException e) {
