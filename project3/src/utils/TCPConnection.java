@@ -5,6 +5,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.InetAddress;
 import java.net.Socket;
+import java.net.UnknownHostException;
 
 public class TCPConnection {
 
@@ -26,7 +27,15 @@ public class TCPConnection {
 	 * @return the host name of the destination for this connection.
 	 */
 	public String getHostName() {
-		return socket.getInetAddress().getCanonicalHostName();
+		String name = socket.getInetAddress().getCanonicalHostName();
+		if(name.equals("localhost")) {
+			try {
+				return InetAddress.getLocalHost().getHostAddress();
+			} catch (UnknownHostException e) {
+				System.err.println("Cannot find host. Try running client on different machine than server.");
+			}
+		}
+		return name;
 	}
 	
 	/**
