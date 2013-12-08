@@ -69,7 +69,14 @@ public class TCPConnection {
 		byte[] buffer = new byte[bufferLength];
 		try {
 			InputStream message = socket.getInputStream();
-			message.read(buffer, 0, bufferLength);
+			int readBytes = 0;
+			while(readBytes != bufferLength) {
+				int bytesRead = message.read(buffer, 0, bufferLength);
+				if(bytesRead == -1) {
+					break;
+				}
+				readBytes += bytesRead;
+			}
 		} catch (IOException e) {
 			e.printStackTrace();
 		}

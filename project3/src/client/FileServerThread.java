@@ -116,10 +116,10 @@ public class FileServerThread extends Thread {
 				int numBytesRead = 0;
 				while(numBytesRead != FileServer.CHUNK_SIZE) {
 					int bytesRead = input.read(chunk, numBytesRead, FileServer.CHUNK_SIZE - numBytesRead);
+					numBytesRead += bytesRead; 
 					if(bytesRead == -1) {
 						break;
 					}
-					numBytesRead += bytesRead; 
 				}
 				byte[] header = ConnectionUtils.constructHeader(numBytesRead, MessageType.FILE_DATA);
 				byte[] message = ConnectionUtils.merge(header, chunk);
