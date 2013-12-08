@@ -27,7 +27,7 @@ public class TCPConnection {
 	 * @return the host name of the destination for this connection.
 	 */
 	public String getHostName() {
-		String name = socket.getInetAddress().getCanonicalHostName();
+		String name = socket.getInetAddress().getHostName();
 		if(name.equals("localhost")) {
 			try {
 				return InetAddress.getLocalHost().getHostAddress();
