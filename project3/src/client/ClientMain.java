@@ -19,7 +19,7 @@ public class ClientMain {
 
 	private static final String INPUT_FILE_LOCATION = ".." + File.separator + "inputFiles";
 	private static final String OUTPUT_FILE_LOCATION = ".." + File.separator + "receivedFiles";
-	private static final String SERVER_ADDR = "localhost";
+	private static final String SERVER_ADDR = "108.179.184.20";
 	private static final int NAMES_PER_LINE = 3;
 
 	private static TCPConnection connectionToServer;
