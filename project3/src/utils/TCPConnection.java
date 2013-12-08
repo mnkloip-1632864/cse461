@@ -74,10 +74,10 @@ public class TCPConnection {
 				int bytesRead = message.read(buffer, 0, bufferLength);
 				if(bytesRead == -1) {
 					System.out.println("Breaking early!");
-					bytesRead = 0;
 					try {
 						Thread.sleep(10);
 					} catch (InterruptedException e) {}
+					break;
 				}
 				readBytes += bytesRead;
 			}
