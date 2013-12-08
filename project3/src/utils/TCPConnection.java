@@ -73,7 +73,11 @@ public class TCPConnection {
 			while(readBytes != bufferLength) {
 				int bytesRead = message.read(buffer, 0, bufferLength);
 				if(bytesRead == -1) {
-					break;
+					System.out.println("Breaking early!");
+					bytesRead = 0;
+					try {
+						Thread.sleep(10);
+					} catch (InterruptedException e) {}
 				}
 				readBytes += bytesRead;
 			}
