@@ -146,30 +146,6 @@ public class FileServerThread extends Thread {
 					Thread.sleep(10);
 				} catch (InterruptedException e) {}
 			}
-
-			//			for(int i = 0; i < numChunks; i++) {
-			//				byte[] chunk = new byte[FileServer.CHUNK_SIZE];
-			//				int numBytesRead = 0;
-			//				while(numBytesRead != FileServer.CHUNK_SIZE) {
-			//					int bytesRead = input.read(chunk, numBytesRead, FileServer.CHUNK_SIZE - numBytesRead);
-			//					numBytesRead += bytesRead; 
-			//					if(bytesRead == -1) {
-			//						break;
-			//					}
-			//					try {
-			//						Thread.sleep(1);
-			//					} catch (InterruptedException e) {}
-			//				}
-			//				if(numBytesRead < 0) {
-			//					numBytesRead = 0;
-			//				}
-			//				byte[] header = ConnectionUtils.constructHeader(numBytesRead, MessageType.FILE_DATA);
-			//				byte[] message = ConnectionUtils.merge(header, chunk);
-			//				System.out.println("Sending " + i + ": " + Arrays.toString(header));
-			//				out.println("Sending: " + Arrays.toString(header) + Arrays.toString(chunk));//TODO
-			//				
-			//				connection.send(message, header.length + numBytesRead);
-			//			}
 		} catch (IOException e) {
 			throw new FileTransmissionException();
 		} finally {
