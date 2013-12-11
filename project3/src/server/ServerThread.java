@@ -26,21 +26,14 @@ public class ServerThread extends Thread {
 	public void run() {
 		try {
 			/* 
-			 * Step 1: ask the client for a list of files it's
+			 * Ask the client for a list of files it's
 			 * willing to share.
 			 */
 			System.out.println("Connection established with client. Requesting files.");
 			retrieveAndStoreFiles();
 			
-			/* 
-			 * Step 2: provide the client with a list of files
-			 * that it can get from other nodes.
-			 */
-			
-			sendAvailableFiles();
-			
 			/*
-			 * Step 3: process client requests. These requests
+			 * Process client requests. These requests
 			 * include getting a list of available files, getting
 			 * a node that has a specific file, or termination.
 			 */

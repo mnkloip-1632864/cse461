@@ -43,6 +43,20 @@ public class ClientModel {
 	}
 	
 	/**
+	 * Get the list of files that are available for download. 
+	 * @return a set of String where each of the String represents the file
+	 *         name of a file that is available in the remote machine. 
+	 */
+	public Set<String> getAvailableFiles() {
+		// Request a list of available files
+		byte[] header = ConnectionUtils.constructHeader(0, MessageType.REQUEST_AVAILABLE_FILES);
+		connectionToServer.send(header);
+		// Get the response
+		Set<String> fileNames = ConnectionUtils.getFileList(connectionToServer);
+		return fileNames;
+	}
+		
+	/**
 	 * Retrieves a FileMapping for the current client.
 	 */
 	public FileMapping getFileMapping() {
@@ -86,16 +100,6 @@ public class ClientModel {
 			return new String(nodeIp);
 		}
 		return null;
-	}
-
-	/**
-	 * Get the list of files that are available for download. 
-	 * @return a set of String where each of the String represents the file
-	 *         name of a file that is available in the remote machine. 
-	 */
-	public Set<String> getAvailableFiles() {
-		Set<String> fileNames = ConnectionUtils.getFileList(connectionToServer);
-		return fileNames;
 	}
 
 	public void checkFileExists(String fileToGet, Set<String> filesAvailable) throws FileRetrievalException {

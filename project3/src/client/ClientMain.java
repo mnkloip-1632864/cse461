@@ -17,7 +17,6 @@ public class ClientMain {
 	
 	private static ClientModel clientModel;
 	private static ClientView clientView;
-	private static ClientPanel clientPanel;
 	private static boolean waitingForFile;
 
 	public static void main(String[] args) {
@@ -29,10 +28,11 @@ public class ClientMain {
 		clientModel = new ClientModel();
 		
 		// setup the Client View
-		clientView = new CommandLineView();		
+		clientView = new CommandLineView();	
+		
 		try {
-			Set<String> filesAvailable = clientModel.getAvailableFiles();
 			while (true) {
+				Set<String> filesAvailable = clientModel.getAvailableFiles();
 				clientView.displayAvailableFiles(filesAvailable);
 				String fileToGet = clientView.retrieveFilenameRequest();
 				if (fileToGet == null) {
