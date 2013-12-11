@@ -48,15 +48,7 @@ public class TCPConnection {
 	public void send(byte[] message, int length) {
 		try {
 			OutputStream out = socket.getOutputStream();
-			if(length < message.length) {
-				byte[] smess = new byte[length];
-				for (int i = 0; i < smess.length; i++) {
-					smess[i] = message[i];
-				}
-				out.write(smess);
-			} else {
-				out.write(message);
-			}
+			out.write(message, 0, length);
 			out.flush();
 		} catch (IOException e) {
 			e.printStackTrace();
