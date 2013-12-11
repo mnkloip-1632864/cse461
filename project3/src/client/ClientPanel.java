@@ -5,6 +5,7 @@ import java.awt.Dimension;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.Set;
 
 import javax.swing.JButton;
 import javax.swing.JComboBox;
@@ -16,7 +17,7 @@ import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.WindowConstants;
 
-public class ClientPanel {
+public class ClientPanel implements ClientView {
 
 	private JFrame clientFrame;
 	private JPanel buttonPanel;
@@ -36,10 +37,6 @@ public class ClientPanel {
 	private JComboBox<String> fileToGet;
 	private JProgressBar progressBar;
 	private static final String GET_FILE = "Please choose a file to retrieve";
-
-	public static void main(String args[]) {
-		ClientPanel clientPanel = new ClientPanel();
-	}
 
 	public ClientPanel() {
 		loadGUI();
@@ -136,9 +133,39 @@ public class ClientPanel {
 		receivePanel.add(selectPanel, BorderLayout.NORTH);
 		receivePanel.add(receiveSubPanel2, BorderLayout.CENTER);
 	}
+
+	@Override
+	public void displayAvailableFiles(Set<String> fileNames) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public String retrieveFilenameRequest() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public void displayError(String error) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void displayMessage(String message) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void registerFileReceiver(FileReceiverTask fileReceiver) {
+		// TODO Auto-generated method stub
+		
+	}
 	
 	private class InputDirectoryChooser implements ActionListener {
-
+		
 		@Override
 		public void actionPerformed(ActionEvent arg0) {
 			JFileChooser chooser = new JFileChooser();
@@ -149,14 +176,14 @@ public class ClientPanel {
 			if (chooser.showOpenDialog(null) == JFileChooser.APPROVE_OPTION) {
 				System.out.println(chooser.getCurrentDirectory());
 				System.out.println(chooser.getSelectedFile());
-			// need to have a class that update the input directory.
-			// TODO
+				// need to have a class that update the input directory.
+				// TODO
 			}
 		}
 	}
 	
 	private class OutputDirectoryChooser implements ActionListener {
-
+		
 		@Override
 		public void actionPerformed(ActionEvent e) {
 			JFileChooser chooser = new JFileChooser();
@@ -174,7 +201,7 @@ public class ClientPanel {
 	}
 	
 	private class Transfer implements ActionListener {
-
+		
 		@Override
 		public void actionPerformed(ActionEvent e) {
 			
