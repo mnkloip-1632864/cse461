@@ -154,7 +154,7 @@ public class ClientMain {
 				long numBytesLeft = fileSize - numBytesReceived;
 				int size = numBytesLeft > FileServer.CHUNK_SIZE ? FileServer.CHUNK_SIZE : (int) numBytesLeft;
 				byte[] chunk = connectionToPeer.receive(size);
-				bufferedOut.write(chunk);
+				bufferedOut.write(chunk, 0, chunk.length);
 				numBytesReceived += size;
 			}
 			

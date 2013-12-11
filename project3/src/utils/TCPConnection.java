@@ -57,6 +57,7 @@ public class TCPConnection {
 			} else {
 				out.write(message);
 			}
+			out.flush();
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
