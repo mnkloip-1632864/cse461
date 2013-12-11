@@ -105,7 +105,6 @@ public class ClientMain {
 				try {
 					if (fileSize <= 0) {
 						throw new FileTransmissionException("File size received is incorrect.");
-
 					}
 					if (numChunks <= 0) {
 						throw new FileTransmissionException("Num chunks received is incorrect.");
