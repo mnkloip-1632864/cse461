@@ -153,9 +153,10 @@ public class ClientMain {
 			while(numBytesReceived < fileSize) {
 				long numBytesLeft = fileSize - numBytesReceived;
 				int size = numBytesLeft > FileServer.CHUNK_SIZE ? FileServer.CHUNK_SIZE : (int) numBytesLeft;
-				byte[] chunk = connectionToPeer.receive(size);
-				bufferedOut.write(chunk, 0, chunk.length);
-				numBytesReceived += size;
+				byte[] chunk = new byte[size];
+				int count = connectionToPeer.receiveAsync(chunk);
+				bufferedOut.write(chunk, 0, count);
+				numBytesReceived += count;
 			}
 			
 //			for (int i = 0; i < numChunks; i++) {

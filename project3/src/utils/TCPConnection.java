@@ -79,6 +79,18 @@ public class TCPConnection {
 		}
 		return buffer;
 	}
+	
+	public int receiveAsync(byte[] buffer) {
+		int bytesRead = 0;
+		try {
+			InputStream message = socket.getInputStream();
+			bytesRead = message.read(buffer, 0, buffer.length);
+			
+		} catch (IOException e) {
+			throw new TCPException(e);
+		}
+		return bytesRead;
+	}
 
 	public void close() {
 		try {
