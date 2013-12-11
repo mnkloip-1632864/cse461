@@ -30,6 +30,7 @@ public class ClientMain {
 	@SuppressWarnings("unused")
 	private static PrintStream log; //TODO
 	
+	private static ClientPanel clientPanel;
 
 	public static void main(String[] args) {
 		
