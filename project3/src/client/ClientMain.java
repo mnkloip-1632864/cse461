@@ -27,6 +27,7 @@ public class ClientMain {
 	private static TCPConnection connectionToPeer;
 	private static FileMapping fileMap;
 	
+	@SuppressWarnings("unused")
 	private static PrintStream log; //TODO
 	
 
@@ -158,32 +159,6 @@ public class ClientMain {
 				bufferedOut.write(chunk, 0, count);
 				numBytesReceived += count;
 			}
-			
-//			for (int i = 0; i < numChunks; i++) {
-//				byte[] header = connectionToPeer.receive(ConnectionUtils.HEADER_SIZE);
-//				
-//				System.out.println(i + "th header received: " + Arrays.toString(header)); //TODO
-//				
-//				ByteBuffer buf = ByteBuffer.wrap(header);
-//				ConnectionUtils.checkMagic(buf);
-//				int payloadLen = buf.getInt(4);
-//				byte type = buf.get(8);
-//				byte[] message = connectionToPeer.receive(payloadLen);
-//				
-//				log.println(i + "th received:" + Arrays.toString(header) + Arrays.toString(message)); //TODO
-//				
-//				
-//				if (type == MessageType.TERMINATE) {
-//					System.out.println(new String(message));
-//					return;
-//				} else if (type == MessageType.FILE_DATA) {
-//					bufferedOut.write(message);
-//					bytesReceived += payloadLen;
-//				} else {
-//					throw new HeaderException("Wrong message type!");
-//				}
-//			}
-
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();
 			return false;
