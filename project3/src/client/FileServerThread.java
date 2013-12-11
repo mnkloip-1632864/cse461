@@ -1,5 +1,6 @@
 package client;
 
+import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -8,7 +9,6 @@ import java.io.InputStream;
 import java.io.PrintStream;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
-import java.util.Arrays;
 
 import utils.ConnectionUtils;
 import utils.HeaderException;
@@ -22,9 +22,9 @@ import utils.TCPConnection;
 public class FileServerThread extends Thread {
 
 	private TCPConnection connection;
-	
+
 	PrintStream out; //TODO
-	
+
 
 	public FileServerThread(TCPConnection connection) {
 		this.connection = connection;
@@ -33,14 +33,14 @@ public class FileServerThread extends Thread {
 	@Override
 	public void run() {
 		try {
-			
+
 			try {
 				out = new PrintStream(new File("log.txt"));
 			} catch (FileNotFoundException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
-			
+
 			// Receive the name of the file to transmit
 			String fileName = receiveFileName();
 
@@ -113,51 +113,76 @@ public class FileServerThread extends Thread {
 		byte[] message = ConnectionUtils.merge(header, payload);
 		connection.send(message);
 		// send the file in CHUNK_SIZE chunks.
-		sendFileContents(f, numChunks);
+		sendFileContents(f);
 
 	}
 	/**
 	 * Sends the contents of the File in numChunks number of chunks.
 	 * @throws FileTransmissionException if a problem with I/O occurs.
 	 */
-	private void sendFileContents(File f, int numChunks)
+	private void sendFileContents(File f)
 			throws FileTransmissionException {
 		InputStream input = null;
+		BufferedInputStream bufInput = null;
 		try {
 			input = new FileInputStream(f);
-			for(int i = 0; i < numChunks; i++) {
-				byte[] chunk = new byte[FileServer.CHUNK_SIZE];
-				int numBytesRead = 0;
-				while(numBytesRead != FileServer.CHUNK_SIZE) {
-					int bytesRead = input.read(chunk, numBytesRead, FileServer.CHUNK_SIZE - numBytesRead);
-					numBytesRead += bytesRead; 
-					if(bytesRead == -1) {
-						break;
-					}
-					try {
-						Thread.sleep(1);
-					} catch (InterruptedException e) {}
+			bufInput = new BufferedInputStream(input); 
+			long numBytesSent = 0;
+			while(numBytesSent < f.length()) {
+				long numBytesLeft = f.length() - numBytesSent;
+				int size = numBytesLeft > FileServer.CHUNK_SIZE ? FileServer.CHUNK_SIZE : (int) numBytesLeft;
+				// try to get a chunk of data from the file to send
+				byte[] chunk = new byte[size];
+				int numBytesRead = bufInput.read(chunk, 0, chunk.length);
+				if(numBytesRead == -1) {
+					break;
 				}
-				if(numBytesRead < 0) {
-					numBytesRead = 0;
-				}
-				byte[] header = ConnectionUtils.constructHeader(numBytesRead, MessageType.FILE_DATA);
-				byte[] message = ConnectionUtils.merge(header, chunk);
-				System.out.println("Sending " + i + ": " + Arrays.toString(header));
-				out.println("Sending: " + Arrays.toString(header) + Arrays.toString(chunk));//TODO
+				// send the chunk to the client
+				connection.send(chunk, numBytesRead);
 				
-				connection.send(message, header.length + numBytesRead);
+				// update the number of bytes sent
+				numBytesSent += numBytesRead;
 				try {
 					Thread.sleep(10);
 				} catch (InterruptedException e) {}
 			}
+
+			//			for(int i = 0; i < numChunks; i++) {
+			//				byte[] chunk = new byte[FileServer.CHUNK_SIZE];
+			//				int numBytesRead = 0;
+			//				while(numBytesRead != FileServer.CHUNK_SIZE) {
+			//					int bytesRead = input.read(chunk, numBytesRead, FileServer.CHUNK_SIZE - numBytesRead);
+			//					numBytesRead += bytesRead; 
+			//					if(bytesRead == -1) {
+			//						break;
+			//					}
+			//					try {
+			//						Thread.sleep(1);
+			//					} catch (InterruptedException e) {}
+			//				}
+			//				if(numBytesRead < 0) {
+			//					numBytesRead = 0;
+			//				}
+			//				byte[] header = ConnectionUtils.constructHeader(numBytesRead, MessageType.FILE_DATA);
+			//				byte[] message = ConnectionUtils.merge(header, chunk);
+			//				System.out.println("Sending " + i + ": " + Arrays.toString(header));
+			//				out.println("Sending: " + Arrays.toString(header) + Arrays.toString(chunk));//TODO
+			//				
+			//				connection.send(message, header.length + numBytesRead);
+			//			}
 		} catch (IOException e) {
 			throw new FileTransmissionException();
 		} finally {
 			if(input != null) {
-				try {
-					input.close();
-				} catch (IOException e) {}
+				if(bufInput != null) {
+					try {
+						bufInput.close();
+					} catch (IOException e) {}
+				} else {
+					try {
+						input.close();
+					} catch (IOException e) {}
+				}
 			}
 		}
 	}

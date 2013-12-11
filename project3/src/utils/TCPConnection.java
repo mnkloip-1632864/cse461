@@ -82,7 +82,7 @@ public class TCPConnection {
 				readBytes += bytesRead;
 			}
 		} catch (IOException e) {
-			e.printStackTrace();
+			throw new TCPException(e);
 		}
 		return buffer;
 	}

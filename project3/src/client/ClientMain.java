@@ -7,7 +7,6 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.nio.ByteBuffer;
-import java.util.Arrays;
 import java.util.Scanner;
 import java.util.Set;
 
@@ -15,6 +14,7 @@ import utils.ConnectionUtils;
 import utils.HeaderException;
 import utils.MessageType;
 import utils.TCPConnection;
+import utils.TCPException;
 
 public class ClientMain {
 
@@ -117,7 +117,10 @@ public class ClientMain {
 				}
 
 				// retrieve the file and store it to disk
-				retrieveAndStoreFile(fileSize, numChunks, chunkSize, fileToGet);
+				if(!retrieveAndStoreFile(fileSize, fileToGet)) {
+					// problem with file retrieval
+					// TODO
+				}
 
 			} else {
 				byte[] terminate = ConnectionUtils.constructTerminateMessage("User is done!");
@@ -140,41 +143,54 @@ public class ClientMain {
 		}
 	}
 
-	public static void retrieveAndStoreFile(long fileSize, int numChunks, int chunkSize, String fileToGet) {
-		long bytesReceived = 0;
+	public static boolean retrieveAndStoreFile(long fileSize, String fileToGet) {
 		BufferedOutputStream bufferedOut = null;
 		try {
 			FileOutputStream out = new FileOutputStream(OUTPUT_FILE_LOCATION + File.separator + fileToGet);
 			bufferedOut = new BufferedOutputStream(out);
-			for (int i = 0; i < numChunks; i++) {
-				byte[] header = connectionToPeer.receive(ConnectionUtils.HEADER_SIZE);
-				
-				System.out.println(i + "th header received: " + Arrays.toString(header)); //TODO
-				
-				ByteBuffer buf = ByteBuffer.wrap(header);
-				ConnectionUtils.checkMagic(buf);
-				int payloadLen = buf.getInt(4);
-				byte type = buf.get(8);
-				byte[] message = connectionToPeer.receive(payloadLen);
-				
-				log.println(i + "th received:" + Arrays.toString(header) + Arrays.toString(message)); //TODO
-				
-				
-				if (type == MessageType.TERMINATE) {
-					System.out.println(new String(message));
-					return;
-				} else if (type == MessageType.FILE_DATA) {
-					bufferedOut.write(message);
-					bytesReceived += payloadLen;
-				} else {
-					throw new HeaderException("Wrong message type!");
-				}
+			
+			long numBytesReceived = 0;
+			while(numBytesReceived < fileSize) {
+				long numBytesLeft = fileSize - numBytesReceived;
+				int size = numBytesLeft > FileServer.CHUNK_SIZE ? FileServer.CHUNK_SIZE : (int) numBytesLeft;
+				byte[] chunk = connectionToPeer.receive(size);
+				bufferedOut.write(chunk);
+				numBytesReceived += size;
 			}
+			
+//			for (int i = 0; i < numChunks; i++) {
+//				byte[] header = connectionToPeer.receive(ConnectionUtils.HEADER_SIZE);
+//				
+//				System.out.println(i + "th header received: " + Arrays.toString(header)); //TODO
+//				
+//				ByteBuffer buf = ByteBuffer.wrap(header);
+//				ConnectionUtils.checkMagic(buf);
+//				int payloadLen = buf.getInt(4);
+//				byte type = buf.get(8);
+//				byte[] message = connectionToPeer.receive(payloadLen);
+//				
+//				log.println(i + "th received:" + Arrays.toString(header) + Arrays.toString(message)); //TODO
+//				
+//				
+//				if (type == MessageType.TERMINATE) {
+//					System.out.println(new String(message));
+//					return;
+//				} else if (type == MessageType.FILE_DATA) {
+//					bufferedOut.write(message);
+//					bytesReceived += payloadLen;
+//				} else {
+//					throw new HeaderException("Wrong message type!");
+//				}
+//			}
 
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();
+			return false;
 		} catch (IOException e) {
 			e.printStackTrace();
+			return false;
+		} catch (TCPException e) {
+			return false;
 		} finally {
 			if (bufferedOut != null) {
 				try {
@@ -183,6 +199,7 @@ public class ClientMain {
 				} catch (IOException e) {}
 			}
 		}
+		return true;
 
 	}
 
