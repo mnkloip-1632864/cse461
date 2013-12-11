@@ -18,7 +18,7 @@ import utils.TCPException;
 
 public class ClientMain {
 
-	private static final String INPUT_FILE_LOCATION = "/Users/joe/Desktop" + File.separator + "inputFiles";
+	private static final String INPUT_FILE_LOCATION = ".." + File.separator + "inputFiles";
 	private static final String OUTPUT_FILE_LOCATION = ".." + File.separator + "receivedFiles";
 	private static final String SERVER_ADDR = "173.250.158.162";
 	private static final int NAMES_PER_LINE = 3;
