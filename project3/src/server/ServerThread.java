@@ -40,15 +40,14 @@ public class ServerThread extends Thread {
 			sendAvailableFiles();
 			
 			/*
-			 * Step 3: get a filename the client wants.
-			 * Then return the address of a node that has the
-			 * file to the client.
+			 * Step 3: process client requests. These requests
+			 * include getting a list of available files, getting
+			 * a node that has a specific file, or termination.
 			 */
 			
-			String fileName = getClientFilenameRequest();
-			while(fileName != null) {
-				sendNodeAddressContainingFile(fileName);
-				fileName = getClientFilenameRequest();
+			boolean continueServing = true;
+			while(continueServing) {
+				continueServing = processClientRequest();
 			}
 			
 		} catch (HeaderException e) {
@@ -56,6 +55,35 @@ public class ServerThread extends Thread {
 		} finally {
 			cleanUp();
 		}
+	}
+
+	/**
+	 * Reads a request from the client and executes the request.
+	 * @return false if the request was a terminate request or invalid. True otherwise.
+	 */
+	private boolean processClientRequest() {
+		// get the header
+		byte[] header = connection.receive(ConnectionUtils.HEADER_SIZE);
+		ByteBuffer buf = ByteBuffer.wrap(header);
+		ConnectionUtils.checkMagic(buf);
+		int payloadLen = buf.getInt(4);
+		byte type = buf.get(8);
+		
+		// use the appropriate protocol.
+		switch(type) {
+		case MessageType.REQUEST_AVAILABLE_FILES:
+			// return the available files
+			sendAvailableFiles();
+			break;
+		case MessageType.REQUEST:
+			// return a node with the requested file.
+			String fileName = getClientFilenameRequest(payloadLen);				
+			sendNodeAddressContainingFile(fileName);
+			break;
+		default:
+			return false;
+		}
+		return true;
 	}
 
 	private void sendNodeAddressContainingFile(String fileName) {
@@ -70,22 +98,13 @@ public class ServerThread extends Thread {
 	}
 
 	/**
+	 * @param payloadLen 
 	 * @return A String representing the clients request for a file. 
 	 *         Returns null if the client wishes to terminate.
 	 */
-	private String getClientFilenameRequest() {
-		byte[] header = connection.receive(ConnectionUtils.HEADER_SIZE);
-		ByteBuffer buf = ByteBuffer.wrap(header);
-		ConnectionUtils.checkMagic(buf);
-		int payloadLen = buf.getInt(4);
-		byte type = buf.get(8);
-		if(type == MessageType.TERMINATE) {
-			return null;
-		} else if(type == MessageType.REQUEST) {
-			byte[] fileName = connection.receive(payloadLen);
-			return new String(fileName);
-		}
-		return null;
+	private String getClientFilenameRequest(int payloadLen) {
+		byte[] fileName = connection.receive(payloadLen);
+		return new String(fileName);
 	}
 
 	/**

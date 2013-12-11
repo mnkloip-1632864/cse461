@@ -10,4 +10,5 @@ public class MessageType {
 	public static final byte TERMINATE = 2; // Message is to terminate
 	public static final byte FILE_META = 3; // Message is the meta data of the file
 	public static final byte FILE_DATA = 4; // Message contains data for a file
+	public static final byte REQUEST_AVAILABLE_FILES = 5;
 }
