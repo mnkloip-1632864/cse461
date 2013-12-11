@@ -48,7 +48,7 @@ public class ClientPanel {
 	private void loadGUI() {
 		clientFrame = new JFrame("Client File Transfer Control Panel");
 		clientFrame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
-		clientFrame.setMaximumSize(new Dimension(300, 720));
+		clientFrame.setMaximumSize(new Dimension(1920, 1080));
 		buttonPanel = new JPanel();
 		selectPanel = new JPanel();
 		controlPanel = new JPanel();

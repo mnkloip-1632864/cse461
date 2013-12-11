@@ -61,6 +61,7 @@ public class ClientMain {
 				waitingForFile = true;
 				clientView.registerFileReceiver(fileReceiver);
 				waitForCompleteFileTransfer();
+				clientView.displayMessage("File transfer of " + fileToGet + " complete!\n");
 			}
 		} finally {
 			clientModel.cleanup("Client is done");
