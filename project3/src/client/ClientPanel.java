@@ -8,6 +8,8 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.util.Set;
 
 import javax.swing.JButton;
@@ -209,6 +211,7 @@ public class ClientPanel implements ClientView {
 		input.setEnabled(true);
 		output.setEnabled(true);
 		clientFrame.setCursor(null);
+
 	}
 
 	@Override
@@ -245,7 +248,7 @@ public class ClientPanel implements ClientView {
 		
 	}
 	
-	private class Receive implements ActionListener {
+	private class Receive implements ActionListener, PropertyChangeListener {
 		
 		@Override
 		public void actionPerformed(ActionEvent e) {
@@ -265,12 +268,23 @@ public class ClientPanel implements ClientView {
 						}
 					} catch (InterruptedException e1) {}
 				}
+				fileReceiver.addPropertyChangeListener(this);
 				fileReceiver.execute();
 			} finally {
 				ClientMain.setErrorOccurred(false);
 				ClientMain.lock.unlock();
 			}
 		
+		}
+
+		@Override
+		public void propertyChange(PropertyChangeEvent evt) {
+			if("progress".equals(evt.getPropertyName())) {
+				int progress = (Integer) evt.getNewValue();
+				progressBar.setValue(progress);
+				progressBar.validate();
+				progressBar.repaint();
+			}
 		}
 	}
 }
