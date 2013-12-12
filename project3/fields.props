@@ -1,0 +1,4 @@
+ServerIP: 192.168.0.2
+ServerPort: 36777
+FileServerPort: 36877
+ChunkSize: 10000
