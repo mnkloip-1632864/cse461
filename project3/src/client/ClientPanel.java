@@ -40,7 +40,8 @@ public class ClientPanel implements ClientView {
 	
 	private FileReceiverTask fileReceiver;
 	private static final String GET_FILE = "Please choose a file to retrieve";
-
+	private static final int NAMES_PER_LINE = 3;
+	
 	public ClientPanel() {
 		loadGUI();
 	}
@@ -82,6 +83,7 @@ public class ClientPanel implements ClientView {
 		input.addActionListener(new InputDirectoryChooser());
 		output.addActionListener(new OutputDirectoryChooser());
 		receive.addActionListener(new Receive());
+		
 	}
 
 	private void setUpSelectBox() {
@@ -139,16 +141,27 @@ public class ClientPanel implements ClientView {
 
 	@Override
 	public void displayAvailableFiles(Set<String> fileNames) {
+		showResults.append("Please choose a file to receive in the drop down menu!\n");
+		showResults.append("Available files are shown below: \n");
+		int i = 0;
 		for (String fileName: fileNames) {
+			showResults.append(fileName);
+			if (i != NAMES_PER_LINE - 1) {
+				showResults.append("\t");
+			} else {
+				showResults.append("\n");
+				i = -1;
+			}
+			i++;
 			fileToGet.addItem(fileName);
 		}
+		showResults.append("\n");
 		fileToGet.validate();
 		fileToGet.repaint();
 	}
 
 	@Override
 	public String retrieveFilenameRequest() {
-		showResults.append("Please choose a file to receive in the drop down menu!");
 		String file = String.valueOf(fileToGet.getSelectedItem());
 		System.out.println("The user chose: " + file);
 		return file;
