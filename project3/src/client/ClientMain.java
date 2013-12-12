@@ -200,6 +200,7 @@ public class ClientMain {
 	public static void terminate() {
 		terminated = true;
 		clientModel.cleanup("Client quit application.");
+		System.exit(0);
 	}
 
 }
