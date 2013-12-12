@@ -1,0 +1,44 @@
+<?xml version="1.0"?>
+<project name="Project3" default="main" basedir=".">
+    <property name="src" value="src" />
+    <property name="bin" value="bin" />
+    <property name="jar" value="." />
+    <property name="classes" value="${bin}/classes" />
+    <property name="client-class" value="client.ClientMain" />
+    <property name="server-class" value="server.ServerMain" />   
+    <property name="client-jar" value="${jar}/${ant.project.name}-Client.jar" />   
+    <property name="server-jar" value="${jar}/${ant.project.name}-Server.jar" />   
+
+    <target name="clean">
+        <delete dir="${bin}"/>
+        <delete file="${client-jar}" />
+        <delete file="${server-jar}" />
+    </target>
+
+    <target name="compile">
+        <mkdir dir="${classes}"/>
+        <javac srcdir="${src}" destdir="${classes}" includeantruntime="false" />
+    </target>
+
+    <target name="jar-client" depends="compile">
+        <jar destfile="${client-jar}" basedir="${classes}">
+            <manifest>
+                <attribute name="Main-Class" value="${client-class}"/>
+            </manifest>
+        </jar>
+    </target>
+
+    <target name="jar-server" depends="compile">
+        <jar destfile="${server-jar}" basedir="${classes}">
+            <manifest>
+                <attribute name="Main-Class" value="${server-class}"/>
+            </manifest>
+        </jar>
+    </target>
+
+    <target name="build" depends="jar-client,jar-server" />
+
+    <target name="main" depends="clean,build"/>
+    
+</project>
+
