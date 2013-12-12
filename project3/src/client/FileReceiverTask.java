@@ -84,6 +84,7 @@ public class FileReceiverTask extends SwingWorker<Void, Void>{
 			e.printStackTrace();
 			return false;
 		} catch (TCPException e) {
+			e.printStackTrace();
 			return false;
 		} finally {
 			if (bufferedOut != null) {

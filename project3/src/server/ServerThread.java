@@ -35,7 +35,7 @@ public class ServerThread extends Thread {
 			}
 			
 		} catch (HeaderException e) {
-			System.err.println(e.getMessage());
+			System.out.println("Client terminated the connection abruptly.");
 		} finally {
 			cleanUp();
 		}

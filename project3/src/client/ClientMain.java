@@ -25,7 +25,6 @@ public class ClientMain {
 	private static boolean waitingForClient;
 	private static boolean errorOccurred;
 	private static boolean terminated;
-	private static boolean anyInput;
 
 	public static void main(String[] args) {
 		// Start the local FileServer
@@ -41,7 +40,6 @@ public class ClientMain {
 		clientView = new ClientPanel();	
 
 		terminated = false;
-		anyInput = true;
 
 		try {
 			while (!terminated) {
@@ -53,9 +51,6 @@ public class ClientMain {
 				waitingForClient = true;
 				clientView.tellWaiting();
 				waitForUserInput();
-				if(!anyInput) {
-					break;
-				}
 				String fileToGet = clientView.retrieveFilenameRequest();
 				if (fileToGet == null) {
 					// Client is done, terminate
@@ -205,9 +200,7 @@ public class ClientMain {
 	public static void terminate() {
 		terminated = true;
 		clientModel.cleanup("Client quit application.");
-		anyInput = false;
-		notifyUserInputed();
-		notifyFileTransferComplete();
+		System.exit(0);
 	}
 
 }

@@ -14,6 +14,7 @@ import utils.ConnectionUtils;
 import utils.HeaderException;
 import utils.MessageType;
 import utils.TCPConnection;
+import utils.TCPException;
 
 /**
  * The FileServerThread keeps track of a connection to a particular client
@@ -58,6 +59,8 @@ public class FileServerThread extends Thread {
 			sendFileTransmissionError();
 		} catch(HeaderException e) {
 			System.err.println("HeaderError: " + e.toString());
+		} catch(TCPException e) {
+			System.err.print("TCP error");
 		} finally {
 			connection.close();
 		}

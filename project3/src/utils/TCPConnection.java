@@ -51,7 +51,7 @@ public class TCPConnection {
 			out.write(message, 0, length);
 			out.flush();
 		} catch (IOException e) {
-			e.printStackTrace();
+			throw new TCPException(e);
 		}
 	}
 
@@ -91,9 +91,7 @@ public class TCPConnection {
 	public void close() {
 		try {
 			socket.close();
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
+		} catch (IOException e) {}
 	}
 
 }
