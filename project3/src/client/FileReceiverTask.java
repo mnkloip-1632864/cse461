@@ -17,7 +17,7 @@ import utils.TCPException;
 
 public class FileReceiverTask extends SwingWorker<Void, Void>{
 
-	private static final String OUTPUT_FILE_LOCATION = ".." + File.separator + "receivedFiles";
+	private static String outputDir = ".." + File.separator + "receivedFiles";
 	
 	private String nodeIp;
 	private String fileToGet;
@@ -49,6 +49,7 @@ public class FileReceiverTask extends SwingWorker<Void, Void>{
 				// problem with file retrieval
 				ClientMain.reportError("File transfer failed");
 			}
+			
 		} finally {
 			ClientMain.notifyFileTransferComplete();			
 		}
@@ -62,7 +63,7 @@ public class FileReceiverTask extends SwingWorker<Void, Void>{
 	private boolean retrieveAndStoreFile(long fileSize, String fileToGet) {
 		BufferedOutputStream bufferedOut = null;
 		try {
-			FileOutputStream out = new FileOutputStream(OUTPUT_FILE_LOCATION + File.separator + fileToGet);
+			FileOutputStream out = new FileOutputStream(outputDir + File.separator + fileToGet);
 			bufferedOut = new BufferedOutputStream(out);
 
 			long numBytesReceived = 0;
@@ -73,6 +74,8 @@ public class FileReceiverTask extends SwingWorker<Void, Void>{
 				int count = connectionToPeer.receiveAsync(chunk);
 				bufferedOut.write(chunk, 0, count);
 				numBytesReceived += count;
+				int progress = (int)((double) numBytesReceived / ((double)fileSize) * 100.0);
+				setProgress(progress);
 			}
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();
@@ -130,5 +133,8 @@ public class FileReceiverTask extends SwingWorker<Void, Void>{
 		connectionToPeer.close();
 	}
 
-
+	public static void updateOutputDirectory(String outputDir) {
+		FileReceiverTask.outputDir = outputDir;
+	}
+	
 }

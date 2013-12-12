@@ -9,12 +9,12 @@ public class ClientMain {
 
 	private static final Lock lock;
 	private static final Condition fileTransferNotDone;
-	
+
 	static {
 		lock = new ReentrantLock();
 		fileTransferNotDone = lock.newCondition();
 	}
-	
+
 	private static ClientModel clientModel;
 	private static ClientView clientView;
 	private static boolean waitingForFile;
@@ -26,10 +26,10 @@ public class ClientMain {
 
 		// setup the Client Model
 		clientModel = new ClientModel();
-		
+
 		// setup the Client View
 		clientView = new CommandLineView();	
-		
+
 		try {
 			while (true) {
 				Set<String> filesAvailable = clientModel.getAvailableFiles();
@@ -46,7 +46,7 @@ public class ClientMain {
 					clientView.displayError(e.getLocalizedMessage());
 					continue;
 				}
-				
+
 				String nodeIp = "";
 				try {
 					nodeIp = clientModel.getNodeWithFile(fileToGet);
@@ -55,8 +55,8 @@ public class ClientMain {
 					clientView.displayError(e.getLocalizedMessage());
 					continue;
 				}
-				
-				
+
+
 				FileReceiverTask fileReceiver = new FileReceiverTask(nodeIp, fileToGet);
 				waitingForFile = true;
 				clientView.registerFileReceiver(fileReceiver);
@@ -85,7 +85,7 @@ public class ClientMain {
 			lock.unlock();
 		}
 	}
-	
+
 	/**
 	 * Lets anyone waiting for the file transfer to be complete
 	 * know that the file transfer is complete.
@@ -109,6 +109,19 @@ public class ClientMain {
 
 	public static void reportError(String message) {
 		clientView.displayError(message);
+	}
+
+	public static void updateInputDirectory(String directory) {
+		try {
+			ClientModel.setInputFileDirectory(directory);
+			clientModel.updateInputFiles();
+		} catch(Exception e) {
+			clientView.displayError("Error setting the input directory.");
+		}
+	}
+
+	public static void updateOutputDirectory(String directory) {
+		FileReceiverTask.updateOutputDirectory(directory);
 	}
 
 }
