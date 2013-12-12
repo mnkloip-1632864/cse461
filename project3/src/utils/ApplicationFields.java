@@ -52,7 +52,7 @@ public class ApplicationFields {
 		ApplicationFields.viewType = viewType;
 	}
 
-	public static void readProperties() throws IOException {
+	private static void readProperties() throws IOException {
 		File f = new File(propertyFile);
 		Scanner fileScanner = new Scanner(f);
 		Scanner lineScanner = new Scanner(fileScanner.nextLine());
@@ -98,4 +98,19 @@ public class ApplicationFields {
 		
 	}
 	
+	/**
+	 * Tries to setup the fields in ApplicationFields, returns false if something bad happened.
+	 */
+	public static boolean setUpApplicationUtils() {
+		try {
+			readProperties();
+		} catch (IOException e) {
+			System.out.println("Properties file is missing.");
+			return false;
+		} catch (Exception e) {
+			System.out.println("Properties file is improperly formated.");
+			return false;
+		}
+		return true;
+	}
 }

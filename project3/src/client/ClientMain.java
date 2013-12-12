@@ -1,6 +1,5 @@
 package client;
 
-import java.io.IOException;
 import java.util.Set;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
@@ -31,16 +30,9 @@ public class ClientMain {
 
 	public static void main(String[] args) {
 		// Setup fields from property file
-		try {
-			ApplicationFields.readProperties();
-		} catch (IOException e) {
-			System.out.println("Properties file is missing.");
-			return;
-		} catch (Exception e) {
-			System.out.println("Properties file is improperly formated.");
+		if(!ApplicationFields.setUpApplicationUtils()) {
 			return;
 		}
-		
 		
 		// Start the local FileServer
 		FileServer fs = new FileServer();
