@@ -3,5 +3,5 @@ ServerPort: 36777
 FileServerPort: 36877
 ChunkSize: 10000
 ViewType: GUI               // Can be either GUI or CMD
-InputDir: ../inputFiles
-OutputDir: ../receivedFiles
+InputDir: inputFiles
+OutputDir: receivedFiles

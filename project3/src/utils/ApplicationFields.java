@@ -1,12 +1,13 @@
 package utils;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.Scanner;
 
 public class ApplicationFields {
 	
-	private static final String propertyFile = "fields.props";
+	private static final String propertyFile = "config.txt";
 	public static final String GUI = "GUI";
 	public static final String CMD = "CMD";
 	
@@ -16,8 +17,8 @@ public class ApplicationFields {
 	public static int chunkSize = 10000;
 	
 	private static String serverAddress = "192.168.0.2";
-	private static String inputDirectory = ".." + File.separator + "inputFiles";
-	private static String outputDirectory = ".." + File.separator + "receivedFiles";
+	private static String inputDirectory = "inputFiles";
+	private static String outputDirectory = "receivedFiles";
 	private static String viewType = GUI;
 	
 	public static String getServerAddress() {
@@ -53,49 +54,53 @@ public class ApplicationFields {
 	}
 
 	private static void readProperties() throws IOException {
-		File f = new File(propertyFile);
-		Scanner fileScanner = new Scanner(f);
-		Scanner lineScanner = new Scanner(fileScanner.nextLine());
-		lineScanner.next();
-		serverAddress = lineScanner.next();
-		lineScanner.close();
+		try {
+			File f = new File(propertyFile);
+			Scanner fileScanner = new Scanner(f);
+			Scanner lineScanner = new Scanner(fileScanner.nextLine());
+			lineScanner.next();
+			serverAddress = lineScanner.next();
+			lineScanner.close();
 
-		lineScanner = new Scanner(fileScanner.nextLine());
-		lineScanner.next();
-		serverPort = lineScanner.nextInt();
-		lineScanner.close();
-		
-		lineScanner = new Scanner(fileScanner.nextLine());
-		lineScanner.next();
-		fileServerPort = lineScanner.nextInt();
-		lineScanner.close();
-
-		lineScanner = new Scanner(fileScanner.nextLine());
-		lineScanner.next();
-		chunkSize = lineScanner.nextInt();
-		lineScanner.close();
-		
-		lineScanner = new Scanner(fileScanner.nextLine());
-		lineScanner.next();
-		setViewType(lineScanner.next());
-		lineScanner.close();
-		
-		if(fileScanner.hasNextLine()) {
 			lineScanner = new Scanner(fileScanner.nextLine());
 			lineScanner.next();
-			inputDirectory = lineScanner.next();
+			serverPort = lineScanner.nextInt();
 			lineScanner.close();
-		}
-		
-		if(fileScanner.hasNextLine()) {
+
 			lineScanner = new Scanner(fileScanner.nextLine());
 			lineScanner.next();
-			outputDirectory = lineScanner.next();
+			fileServerPort = lineScanner.nextInt();
 			lineScanner.close();
+
+			lineScanner = new Scanner(fileScanner.nextLine());
+			lineScanner.next();
+			chunkSize = lineScanner.nextInt();
+			lineScanner.close();
+
+			lineScanner = new Scanner(fileScanner.nextLine());
+			lineScanner.next();
+			setViewType(lineScanner.next());
+			lineScanner.close();
+
+			if(fileScanner.hasNextLine()) {
+				lineScanner = new Scanner(fileScanner.nextLine());
+				lineScanner.next();
+				inputDirectory = lineScanner.next();
+				lineScanner.close();
+			}
+
+			if(fileScanner.hasNextLine()) {
+				lineScanner = new Scanner(fileScanner.nextLine());
+				lineScanner.next();
+				outputDirectory = lineScanner.next();
+				lineScanner.close();
+			}
+			lineScanner.close();
+			fileScanner.close();
+		} catch(FileNotFoundException e) {
+			return;
 		}
-		lineScanner.close();
-		fileScanner.close();
-		
+
 	}
 	
 	/**

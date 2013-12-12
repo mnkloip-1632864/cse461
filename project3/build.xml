@@ -36,14 +36,6 @@
         </jar>
     </target>
 
-    <target name="run-client" depends="jar-client">
-        <java jar="${client-jar}" fork="true" />
-    </target>
-    
-    <target name="run-server" depends="jar-client">
-        <java jar="${server-jar}" fork="true" />
-    </target>
-
     <target name="build" depends="jar-client,jar-server" />
 
     <target name="main" depends="clean,build"/>
