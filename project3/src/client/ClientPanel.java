@@ -150,6 +150,7 @@ public class ClientPanel implements ClientView {
 
 	@Override
 	public void displayAvailableFiles(Set<String> fileNames) {
+		showResults.setText("");
 		showResults.append("Please choose a file to receive in the drop down menu!\n");
 		showResults.append("Available files are shown below: \n");
 		fileToGet.removeAllItems();
