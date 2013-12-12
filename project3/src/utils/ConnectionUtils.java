@@ -7,8 +7,6 @@ import java.util.Set;
 
 public class ConnectionUtils {
 
-	public static final int SERVER_PORT = 36777;
-	public static final int FILE_SERVER_PORT = 36877;
 	public static final int MAGIC = 0xCAFEF00D;
 	public static final int HEADER_SIZE = 9;
 	
@@ -111,7 +109,7 @@ public class ConnectionUtils {
 	
 	public static void checkMagic(ByteBuffer buf) {
 		int magic = buf.getInt(0);
-		if(magic != ConnectionUtils.MAGIC) {
+		if(magic != MAGIC) {
 			throw new HeaderException("Magic number not correct. Expected: " + MAGIC + ", but received: " + magic);
 		}
 	}

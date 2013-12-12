@@ -9,6 +9,7 @@ import java.nio.ByteBuffer;
 
 import javax.swing.SwingWorker;
 
+import utils.ApplicationFields;
 import utils.ConnectionUtils;
 import utils.HeaderException;
 import utils.MessageType;
@@ -16,8 +17,6 @@ import utils.TCPConnection;
 import utils.TCPException;
 
 public class FileReceiverTask extends SwingWorker<Void, Void>{
-
-	private static String outputDir = ".." + File.separator + "receivedFiles";
 	
 	private String nodeIp;
 	private String fileToGet;
@@ -59,19 +58,19 @@ public class FileReceiverTask extends SwingWorker<Void, Void>{
 	}
 	
 	private void setUpConnection(String nodeIp) {
-		connectionToPeer = new TCPConnection(nodeIp, ConnectionUtils.FILE_SERVER_PORT);
+		connectionToPeer = new TCPConnection(nodeIp, ApplicationFields.fileServerPort);
 	}
 
 	private void retrieveAndStoreFile(long fileSize, String fileToGet) throws FileRetrievalException {
 		BufferedOutputStream bufferedOut = null;
 		try {
-			FileOutputStream out = new FileOutputStream(outputDir + File.separator + fileToGet);
+			FileOutputStream out = new FileOutputStream(ApplicationFields.getOutputDirectory() + File.separator + fileToGet);
 			bufferedOut = new BufferedOutputStream(out);
 
 			long numBytesReceived = 0;
 			while(numBytesReceived < fileSize) {
 				long numBytesLeft = fileSize - numBytesReceived;
-				int size = numBytesLeft > FileServer.CHUNK_SIZE ? FileServer.CHUNK_SIZE : (int) numBytesLeft;
+				int size = numBytesLeft > ApplicationFields.chunkSize ? ApplicationFields.chunkSize : (int) numBytesLeft;
 				byte[] chunk = new byte[size];
 				int count = connectionToPeer.receiveAsync(chunk);
 				bufferedOut.write(chunk, 0, count);
@@ -131,10 +130,6 @@ public class FileReceiverTask extends SwingWorker<Void, Void>{
 	
 	private void closeClient() {
 		connectionToPeer.close();
-	}
-
-	public static void updateOutputDirectory(String outputDir) {
-		FileReceiverTask.outputDir = outputDir;
 	}
 	
 }

@@ -1,9 +1,12 @@
 package client;
 
+import java.io.IOException;
 import java.util.Set;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
+
+import utils.ApplicationFields;
 
 public class ClientMain {
 
@@ -27,6 +30,18 @@ public class ClientMain {
 	private static boolean terminated;
 
 	public static void main(String[] args) {
+		// Setup fields from property file
+		try {
+			ApplicationFields.readProperties();
+		} catch (IOException e) {
+			System.out.println("Properties file is missing.");
+			return;
+		} catch (Exception e) {
+			System.out.println("Properties file is improperly formated.");
+			return;
+		}
+		
+		
 		// Start the local FileServer
 		FileServer fs = new FileServer();
 		fs.start();
@@ -178,7 +193,7 @@ public class ClientMain {
 
 	public static void updateInputDirectory(String directory) {
 		try {
-			ClientModel.setInputFileDirectory(directory);
+			ApplicationFields.setInputDirectory(directory);
 			clientModel.updateInputFiles();
 		} catch(Exception e) {
 			clientView.displayError("Error setting the input directory.");
@@ -186,7 +201,7 @@ public class ClientMain {
 	}
 
 	public static void updateOutputDirectory(String directory) {
-		FileReceiverTask.updateOutputDirectory(directory);
+		ApplicationFields.setOutputDirectory(directory);
 	}
 
 	public static boolean hasErrorOccurred() {

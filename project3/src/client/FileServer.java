@@ -1,6 +1,6 @@
 package client;
 
-import utils.ConnectionUtils;
+import utils.ApplicationFields;
 import utils.TCPConnection;
 import utils.TCPServerConnection;
 
@@ -9,12 +9,10 @@ import utils.TCPServerConnection;
  */
 public class FileServer extends Thread {
 	
-	public static final int CHUNK_SIZE = 10000;
-	
 	private TCPServerConnection fileServer;
 	
 	public FileServer() {
-		fileServer = new TCPServerConnection(ConnectionUtils.FILE_SERVER_PORT);
+		fileServer = new TCPServerConnection(ApplicationFields.fileServerPort);
 	}
 	
 	@Override

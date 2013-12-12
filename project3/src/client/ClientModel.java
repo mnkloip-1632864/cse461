@@ -4,31 +4,30 @@ import java.io.File;
 import java.nio.ByteBuffer;
 import java.util.Set;
 
+import utils.ApplicationFields;
 import utils.ConnectionUtils;
 import utils.MessageType;
 import utils.TCPConnection;
 
 public class ClientModel {
 
-	private static final String SERVER_ADDR = "108.179.185.89";
-
-	private static String inputDirectory = ".." + File.separator + "inputFiles";
-
 	private TCPConnection connectionToServer;
 	private FileMapping fileMap;
 	private boolean closed;
 
 	public ClientModel() {
-		connectionToServer = new TCPConnection(SERVER_ADDR, ConnectionUtils.SERVER_PORT);
+		connectionToServer = new TCPConnection(ApplicationFields.getServerAddress(), ApplicationFields.serverPort);
 		updateInputFiles();
 		closed = false;
 	}
 
+	
+	
 	/**
 	 * Populates the fileMap to hold the files to be shared by this machine.
 	 */
 	private void populateFileMap() {
-		File dir = new File(inputDirectory);
+		File dir = new File(ApplicationFields.getInputDirectory());
 		File[] availableFiles = dir.listFiles();
 		for (File file : availableFiles) {
 			fileMap.addFile(file.getName(), file.getPath());
@@ -129,10 +128,6 @@ public class ClientModel {
 			connectionToServer.close();	
 			closed = true;
 		}
-	}
-
-	public static void setInputFileDirectory(String path) {
-		inputDirectory = path;
 	}
 
 	public void updateInputFiles() {

@@ -1,6 +1,6 @@
 package server;
 
-import utils.ConnectionUtils;
+import utils.ApplicationFields;
 import utils.TCPConnection;
 import utils.TCPServerConnection;
 
@@ -14,7 +14,7 @@ public class ConnectionPool {
 	private TCPServerConnection serverConnection;
 	
 	public ConnectionPool() {
-		serverConnection = new TCPServerConnection(ConnectionUtils.SERVER_PORT);
+		serverConnection = new TCPServerConnection(ApplicationFields.serverPort);
 	}
 	
 	public void start() {

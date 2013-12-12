@@ -10,6 +10,7 @@ import java.io.PrintStream;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 
+import utils.ApplicationFields;
 import utils.ConnectionUtils;
 import utils.HeaderException;
 import utils.MessageType;
@@ -108,9 +109,9 @@ public class FileServerThread extends Thread {
 	private void transmitFile(File f) throws FileTransmissionException {
 		// Construct and send the file metadata
 		long fileSize = f.length();
-		int numChunks = (int) (fileSize / FileServer.CHUNK_SIZE) + 1;
+		int numChunks = (int) (fileSize / ApplicationFields.chunkSize) + 1;
 		ByteBuffer buf = ByteBuffer.allocate(16).order(ByteOrder.BIG_ENDIAN);
-		buf.putLong(fileSize).putInt(numChunks).putInt(FileServer.CHUNK_SIZE);
+		buf.putLong(fileSize).putInt(numChunks).putInt(ApplicationFields.chunkSize);
 		byte[] payload = buf.array();
 		byte[] header = ConnectionUtils.constructHeader(payload.length, MessageType.FILE_META);
 		byte[] message = ConnectionUtils.merge(header, payload);
@@ -133,7 +134,7 @@ public class FileServerThread extends Thread {
 			long numBytesSent = 0;
 			while(numBytesSent < f.length()) {
 				long numBytesLeft = f.length() - numBytesSent;
-				int size = numBytesLeft > FileServer.CHUNK_SIZE ? FileServer.CHUNK_SIZE : (int) numBytesLeft;
+				int size = numBytesLeft > ApplicationFields.chunkSize ? ApplicationFields.chunkSize : (int) numBytesLeft;
 				// try to get a chunk of data from the file to send
 				byte[] chunk = new byte[size];
 				int numBytesRead = bufInput.read(chunk, 0, chunk.length);
