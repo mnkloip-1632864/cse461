@@ -1,6 +1,7 @@
 package client;
 
 import java.awt.BorderLayout;
+import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
@@ -36,6 +37,8 @@ public class ClientPanel implements ClientView {
 	private JTextArea showStatus;
 	private JComboBox<String> fileToGet;
 	private JProgressBar progressBar;
+	
+	private FileReceiverTask fileReceiver;
 	private static final String GET_FILE = "Please choose a file to retrieve";
 
 	public ClientPanel() {
@@ -78,7 +81,7 @@ public class ClientPanel implements ClientView {
 		// add action listener
 		input.addActionListener(new InputDirectoryChooser());
 		output.addActionListener(new OutputDirectoryChooser());
-		
+		receive.addActionListener(new Receive());
 	}
 
 	private void setUpSelectBox() {
@@ -111,7 +114,7 @@ public class ClientPanel implements ClientView {
 
 	private void setUpButtonPanel() {
 		buttonPanel.setLayout(new GridLayout(1, 2));
-		input = new JButton("Add input files or directory to share");
+		input = new JButton("Set input directory to share");
 		output = new JButton("Choose output directory");
 		buttonPanel.add(input);
 		buttonPanel.add(output);
@@ -136,32 +139,34 @@ public class ClientPanel implements ClientView {
 
 	@Override
 	public void displayAvailableFiles(Set<String> fileNames) {
-		// TODO Auto-generated method stub
-		
+		for (String fileName: fileNames) {
+			fileToGet.addItem(fileName);
+		}
+		fileToGet.validate();
+		fileToGet.repaint();
 	}
 
 	@Override
 	public String retrieveFilenameRequest() {
-		// TODO Auto-generated method stub
-		return null;
+		showResults.append("Please choose a file to receive in the drop down menu!");
+		String file = String.valueOf(fileToGet.getSelectedItem());
+		System.out.println("The user chose: " + file);
+		return file;
 	}
 
 	@Override
 	public void displayError(String error) {
-		// TODO Auto-generated method stub
-		
+		showStatus.append(error);
 	}
 
 	@Override
 	public void displayMessage(String message) {
-		// TODO Auto-generated method stub
-		
+		showResults.append(message);
 	}
 
 	@Override
 	public void registerFileReceiver(FileReceiverTask fileReceiver) {
-		// TODO Auto-generated method stub
-		
+		this.fileReceiver = fileReceiver;
 	}
 	
 	private class InputDirectoryChooser implements ActionListener {
@@ -200,11 +205,15 @@ public class ClientPanel implements ClientView {
 		
 	}
 	
-	private class Transfer implements ActionListener {
+	private class Receive implements ActionListener {
 		
 		@Override
 		public void actionPerformed(ActionEvent e) {
-			
+			receive.setEnabled(false);
+			input.setEnabled(false);
+			output.setEnabled(false);
+			clientFrame.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+			fileReceiver.execute();
 		}
 		
 	}
