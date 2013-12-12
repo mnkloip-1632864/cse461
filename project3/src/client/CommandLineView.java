@@ -55,5 +55,14 @@ public class CommandLineView implements ClientView {
 	public void registerFileReceiver(FileReceiverTask fileReceiver) {
 		fileReceiver.execute();
 	}
+	
+	@Override
+	public void unregisterFileReceiver() {		
+	}
+
+	@Override
+	public void tellWaiting() {
+		ClientMain.notifyUserInputed();
+	}
 
 }

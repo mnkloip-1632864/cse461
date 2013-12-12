@@ -32,4 +32,14 @@ public interface ClientView {
 	 * separate thread.
 	 */
 	public void registerFileReceiver(FileReceiverTask fileReceiver);
+
+	/**
+	 * Unregisters the currently registered file receiver.
+	 */
+	public void unregisterFileReceiver();
+	
+	/**
+	 * Tells the view that the main thread is going to wait for user input. 
+	 */
+	public void tellWaiting();
 }

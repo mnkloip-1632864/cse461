@@ -7,17 +7,23 @@ import java.util.concurrent.locks.ReentrantLock;
 
 public class ClientMain {
 
-	private static final Lock lock;
+	public static final Lock lock;
 	private static final Condition fileTransferNotDone;
+	private static final Condition userHasntSelected;
+	public static final Condition fileReceiverNotInitialized;
 
 	static {
 		lock = new ReentrantLock();
 		fileTransferNotDone = lock.newCondition();
+		userHasntSelected = lock.newCondition();
+		fileReceiverNotInitialized = lock.newCondition();
 	}
 
 	private static ClientModel clientModel;
 	private static ClientView clientView;
 	private static boolean waitingForFile;
+	private static boolean waitingForClient;
+	private static boolean errorOccurred;
 
 	public static void main(String[] args) {
 		// Start the local FileServer
@@ -26,14 +32,22 @@ public class ClientMain {
 
 		// setup the Client Model
 		clientModel = new ClientModel();
+		setErrorOccurred(false);
 
 		// setup the Client View
-		clientView = new CommandLineView();	
+//		clientView = new CommandLineView();
+		clientView = new ClientPanel();	
 
 		try {
 			while (true) {
+				clientView.unregisterFileReceiver();
 				Set<String> filesAvailable = clientModel.getAvailableFiles();
 				clientView.displayAvailableFiles(filesAvailable);
+				
+				// Wait for user input
+				waitingForClient = true;
+				clientView.tellWaiting();
+				waitForUserInput();
 				String fileToGet = clientView.retrieveFilenameRequest();
 				if (fileToGet == null) {
 					// Client is done, terminate
@@ -44,6 +58,7 @@ public class ClientMain {
 					clientModel.checkFileExists(fileToGet, filesAvailable);
 				} catch (FileRetrievalException e) {
 					clientView.displayError(e.getLocalizedMessage());
+					notifyFileReceiverTask(true);
 					continue;
 				}
 
@@ -53,6 +68,7 @@ public class ClientMain {
 					clientView.displayMessage("Retrieving: " + fileToGet + " from: " + nodeIp);
 				} catch (FileRetrievalException e) {
 					clientView.displayError(e.getLocalizedMessage());
+					notifyFileReceiverTask(true);
 					continue;
 				}
 
@@ -60,6 +76,7 @@ public class ClientMain {
 				FileReceiverTask fileReceiver = new FileReceiverTask(nodeIp, fileToGet);
 				waitingForFile = true;
 				clientView.registerFileReceiver(fileReceiver);
+				notifyFileReceiverTask(false);
 				waitForCompleteFileTransfer();
 				clientView.displayMessage("File transfer of " + fileToGet + " complete!\n");
 			}
@@ -101,6 +118,49 @@ public class ClientMain {
 	}
 
 	/**
+	 * Waits for file transfer to be complete.
+	 * When this function returns, the file will either have been 
+	 * transferred or a problem will have arisen.
+	 */
+	public static void waitForUserInput() {
+		lock.lock();
+		try {
+			while (waitingForClient) {
+				try {
+					userHasntSelected.await();
+				} catch (InterruptedException e) {}
+			}
+		} finally {
+			lock.unlock();
+		}
+	}
+
+	/**
+	 * Lets anyone waiting for the file transfer to be complete
+	 * know that the file transfer is complete.
+	 */
+	public static void notifyUserInputed() {
+		lock.lock();
+		try {
+			waitingForClient = false;
+			userHasntSelected.signalAll();
+		} finally {
+			lock.unlock();
+		}
+	}
+	
+
+	public static void notifyFileReceiverTask(boolean error) {
+		lock.lock();
+		try {
+			setErrorOccurred(error);
+			fileReceiverNotInitialized.signalAll();
+		} finally {
+			lock.unlock();
+		}
+	}
+	
+	/**
 	 * Gets a FileMapping for the client.
 	 */
 	public static FileMapping getFileMapping() {
@@ -122,6 +182,14 @@ public class ClientMain {
 
 	public static void updateOutputDirectory(String directory) {
 		FileReceiverTask.updateOutputDirectory(directory);
+	}
+
+	public static boolean hasErrorOccurred() {
+		return errorOccurred;
+	}
+
+	public static void setErrorOccurred(boolean errorOccurred) {
+		ClientMain.errorOccurred = errorOccurred;
 	}
 
 }

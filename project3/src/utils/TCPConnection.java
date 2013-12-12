@@ -66,10 +66,6 @@ public class TCPConnection {
 			while(readBytes != bufferLength) {
 				int bytesRead = message.read(buffer, 0, bufferLength);
 				if(bytesRead == -1) {
-					System.out.println("Breaking early!");
-					try {
-						Thread.sleep(10);
-					} catch (InterruptedException e) {}
 					break;
 				}
 				readBytes += bytesRead;

@@ -19,7 +19,10 @@ import javax.swing.JTextArea;
 import javax.swing.WindowConstants;
 
 public class ClientPanel implements ClientView {
-
+	
+	private static final String GET_FILE = "Please choose a file to retrieve";
+	private static final int NAMES_PER_LINE = 3;
+	
 	private JFrame clientFrame;
 	private JPanel buttonPanel;
 	private JPanel displayPanel;
@@ -39,10 +42,9 @@ public class ClientPanel implements ClientView {
 	private JProgressBar progressBar;
 	
 	private FileReceiverTask fileReceiver;
-	private static final String GET_FILE = "Please choose a file to retrieve";
-	private static final int NAMES_PER_LINE = 3;
 	
 	public ClientPanel() {
+		this.fileReceiver = null;
 		loadGUI();
 	}
 
@@ -143,6 +145,8 @@ public class ClientPanel implements ClientView {
 	public void displayAvailableFiles(Set<String> fileNames) {
 		showResults.append("Please choose a file to receive in the drop down menu!\n");
 		showResults.append("Available files are shown below: \n");
+		fileToGet.removeAllItems();
+		fileToGet.addItem(GET_FILE);
 		int i = 0;
 		for (String fileName: fileNames) {
 			showResults.append(fileName);
@@ -169,17 +173,41 @@ public class ClientPanel implements ClientView {
 
 	@Override
 	public void displayError(String error) {
-		showStatus.append(error);
+		showStatus.append(error + "\n");
 	}
 
 	@Override
 	public void displayMessage(String message) {
-		showResults.append(message);
+		showResults.append(message + "\n");
 	}
 
 	@Override
 	public void registerFileReceiver(FileReceiverTask fileReceiver) {
-		this.fileReceiver = fileReceiver;
+		ClientMain.lock.lock();
+		try {
+			this.fileReceiver = fileReceiver;
+		} finally {
+			ClientMain.lock.unlock();
+		}
+		
+	}
+
+	@Override
+	public void unregisterFileReceiver() {
+		ClientMain.lock.lock();
+		try {
+			this.fileReceiver = null;
+		} finally {
+			ClientMain.lock.unlock();
+		}
+		receive.setEnabled(true);
+		input.setEnabled(true);
+		output.setEnabled(true);
+		clientFrame.setCursor(null);
+	}
+
+	@Override
+	public void tellWaiting() {		
 	}
 	
 	private class InputDirectoryChooser implements ActionListener {
@@ -192,11 +220,7 @@ public class ClientPanel implements ClientView {
 			chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
 			chooser.setAcceptAllFileFilterUsed(false);
 			if (chooser.showOpenDialog(null) == JFileChooser.APPROVE_OPTION) {
-				System.out.println(chooser.getCurrentDirectory());
-				System.out.println(chooser.getSelectedFile());
-				// need to have a class that update the input directory.
-				// TODO
-			}
+				ClientMain.updateInputDirectory(chooser.getSelectedFile().getAbsolutePath());			}
 		}
 	}
 	
@@ -210,9 +234,7 @@ public class ClientPanel implements ClientView {
 			chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
 			chooser.setAcceptAllFileFilterUsed(false);
 			if (chooser.showOpenDialog(null) == JFileChooser.APPROVE_OPTION) {
-				// TODO
-				System.out.println(chooser.getCurrentDirectory());
-				System.out.println(chooser.getSelectedFile());
+				ClientMain.updateOutputDirectory(chooser.getSelectedFile().getAbsolutePath());
 			}
 		}
 		
@@ -226,9 +248,24 @@ public class ClientPanel implements ClientView {
 			input.setEnabled(false);
 			output.setEnabled(false);
 			clientFrame.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-			fileReceiver.execute();
-		}
+			ClientMain.lock.lock();
+			try {
+				ClientMain.notifyUserInputed();
+				while(fileReceiver == null) {
+					try {
+						ClientMain.fileReceiverNotInitialized.await();
+						if(ClientMain.hasErrorOccurred()) {
+							unregisterFileReceiver();
+							return;
+						}
+					} catch (InterruptedException e1) {}
+				}
+				fileReceiver.execute();
+			} finally {
+				ClientMain.setErrorOccurred(false);
+				ClientMain.lock.unlock();
+			}
 		
+		}
 	}
-
 }
