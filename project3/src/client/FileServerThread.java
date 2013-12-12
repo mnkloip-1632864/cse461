@@ -3,10 +3,8 @@ package client;
 import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.PrintStream;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 
@@ -25,9 +23,6 @@ public class FileServerThread extends Thread {
 
 	private TCPConnection connection;
 
-	PrintStream out; //TODO
-
-
 	public FileServerThread(TCPConnection connection) {
 		this.connection = connection;
 	}
@@ -35,14 +30,6 @@ public class FileServerThread extends Thread {
 	@Override
 	public void run() {
 		try {
-
-			try {
-				out = new PrintStream(new File("log.txt"));
-			} catch (FileNotFoundException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-
 			// Receive the name of the file to transmit
 			String fileName = receiveFileName();
 
