@@ -20,8 +20,6 @@ public class ClientModel {
 		updateInputFiles();
 		closed = false;
 	}
-
-	
 	
 	/**
 	 * Populates the fileMap to hold the files to be shared by this machine.
@@ -53,6 +51,9 @@ public class ClientModel {
 		connectionToServer.send(header);
 		// Get the response
 		Set<String> fileNames = ConnectionUtils.getFileList(connectionToServer);
+		for(String s : fileMap.getAvailableFilenames()) {
+			fileNames.remove(s);
+		}
 		return fileNames;
 	}
 

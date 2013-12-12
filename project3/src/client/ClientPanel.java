@@ -190,6 +190,11 @@ public class ClientPanel implements ClientView {
 	}
 
 	@Override
+	public void displayWaitingMessage(String message) {
+		showResults.setText(message + "\n");
+	}
+	
+	@Override
 	public void registerFileReceiver(FileReceiverTask fileReceiver) {
 		ClientMain.lock.lock();
 		try {

@@ -51,8 +51,14 @@ public class ClientMain {
 		setErrorOccurred(false);
 
 		// setup the Client View
-		//		clientView = new CommandLineView();
-		clientView = new ClientPanel();	
+		if(ApplicationFields.getViewType().equals(ApplicationFields.CMD)) {
+			clientView = new CommandLineView();
+		} else if(ApplicationFields.getViewType().equals(ApplicationFields.GUI)) {
+			clientView = new ClientPanel();	
+		} else {
+			System.err.println("Check properties file: ViewType should be either " 
+					+ ApplicationFields.CMD + " or " + ApplicationFields.GUI);
+		}
 
 		terminated = false;
 
@@ -60,6 +66,13 @@ public class ClientMain {
 			while (!terminated) {
 				clientView.unregisterFileReceiver();
 				Set<String> filesAvailable = clientModel.getAvailableFiles();
+				if(filesAvailable.isEmpty()) {
+					// no-one else is online, wait until someone is online.
+					clientView.displayWaitingMessage("I'm sorry, nobody else is online. Please wait...");
+					Thread.sleep(1000);
+					notifyFileReceiverTask(true);
+					continue;
+				}
 				clientView.displayAvailableFiles(filesAvailable);
 
 				// Wait for user input

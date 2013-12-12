@@ -50,6 +50,11 @@ public class CommandLineView implements ClientView {
 	public void displayMessage(String message) {
 		System.out.println(message);
 	}
+	
+	@Override
+	public void displayWaitingMessage(String message) {
+		System.out.println(message);		
+	}
 
 	@Override
 	public void registerFileReceiver(FileReceiverTask fileReceiver) {

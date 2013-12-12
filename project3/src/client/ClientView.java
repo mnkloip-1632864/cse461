@@ -27,6 +27,8 @@ public interface ClientView {
 	 */
 	public void displayMessage(String message);
 
+	public void displayWaitingMessage(String message);
+	
 	/**
 	 * Registers the file receiver with this view, to execute in a
 	 * separate thread.
@@ -42,4 +44,5 @@ public interface ClientView {
 	 * Tells the view that the main thread is going to wait for user input. 
 	 */
 	public void tellWaiting();
+
 }
