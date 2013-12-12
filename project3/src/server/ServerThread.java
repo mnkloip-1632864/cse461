@@ -25,19 +25,11 @@ public class ServerThread extends Thread {
 	@Override
 	public void run() {
 		try {
-			/* 
-			 * Ask the client for a list of files it's
-			 * willing to share.
-			 */
-			System.out.println("Connection established with client. Requesting files.");
-			retrieveAndStoreFiles();
-			
 			/*
 			 * Process client requests. These requests
 			 * include getting a list of available files, getting
 			 * a node that has a specific file, or termination.
 			 */
-			
 			boolean continueServing = true;
 			while(continueServing) {
 				continueServing = processClientRequest();
@@ -72,6 +64,12 @@ public class ServerThread extends Thread {
 			// return a node with the requested file.
 			String fileName = getClientFilenameRequest(payloadLen);				
 			sendNodeAddressContainingFile(fileName);
+			break;
+		case MessageType.UPDATE_AVAILABLE_FILES:
+			// Update the client node's sharing files in the FileFinder
+			FileFinder finder = FileFinder.getInstance();
+			finder.removeAddress(connection.getHostName());
+			retrieveAndStoreFiles(payloadLen);
 			break;
 		default:
 			return false;
@@ -112,8 +110,9 @@ public class ServerThread extends Thread {
 	/**
 	 * Retrieves a list of files that the client is willing to share and store this in the FileFinder.
 	 */
-	private void retrieveAndStoreFiles() {
-		Set<String> fileNames = ConnectionUtils.getFileList(connection);
+	private void retrieveAndStoreFiles(int payloadLen) {
+		byte[] payload = connection.receive(payloadLen);
+		Set<String> fileNames = ConnectionUtils.getFileNames(payload);
 		// Add the fileNames to the FileFinder to be found at this client
 		FileFinder fileFinder = FileFinder.getInstance();
 		fileFinder.addFilesToAddress(connection.getHostName(), fileNames);
