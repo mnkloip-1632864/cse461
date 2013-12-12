@@ -45,9 +45,11 @@ public class FileReceiverTask extends SwingWorker<Void, Void>{
 			long fileSize = data.getLong(0);
 
 			// retrieve the file and store it to disk
-			if (!retrieveAndStoreFile(fileSize, fileToGet)) {
+			try {
+				retrieveAndStoreFile(fileSize, fileToGet);
+			} catch (FileRetrievalException e) {
 				// problem with file retrieval
-				ClientMain.reportError("File transfer failed");
+				ClientMain.reportError("File transfer failed:\n" + e.getLocalizedMessage());
 			}
 			
 		} finally {
@@ -60,7 +62,7 @@ public class FileReceiverTask extends SwingWorker<Void, Void>{
 		connectionToPeer = new TCPConnection(nodeIp, ConnectionUtils.FILE_SERVER_PORT);
 	}
 
-	private boolean retrieveAndStoreFile(long fileSize, String fileToGet) {
+	private void retrieveAndStoreFile(long fileSize, String fileToGet) throws FileRetrievalException {
 		BufferedOutputStream bufferedOut = null;
 		try {
 			FileOutputStream out = new FileOutputStream(outputDir + File.separator + fileToGet);
@@ -78,14 +80,13 @@ public class FileReceiverTask extends SwingWorker<Void, Void>{
 				setProgress(progress);
 			}
 		} catch (FileNotFoundException e) {
-			e.printStackTrace();
-			return false;
+			throw new FileRetrievalException("Output directory could not be found.");
 		} catch (IOException e) {
-			e.printStackTrace();
-			return false;
+			throw new FileRetrievalException("I/O Exception occurred.");
 		} catch (TCPException e) {
-			e.printStackTrace();
-			return false;
+			throw new FileRetrievalException("Problem connecting to the source.");
+		} catch (Exception e) {
+			throw new FileRetrievalException("Problem connecting to the source.");
 		} finally {
 			if (bufferedOut != null) {
 				try {
@@ -94,8 +95,6 @@ public class FileReceiverTask extends SwingWorker<Void, Void>{
 				} catch (IOException e) {}
 			}
 		}
-		return true;
-
 	}
 
 	private byte[] getFileMeta() {
