@@ -16,10 +16,12 @@ public class ClientModel {
 
 	private TCPConnection connectionToServer;
 	private FileMapping fileMap;
+	private boolean closed;
 
 	public ClientModel() {
 		connectionToServer = new TCPConnection(SERVER_ADDR, ConnectionUtils.SERVER_PORT);
 		updateInputFiles();
+		closed = false;
 	}
 
 	/**
@@ -32,7 +34,7 @@ public class ClientModel {
 			fileMap.addFile(file.getName(), file.getPath());
 		}
 	}
-	
+
 	/**
 	 * Sends the files that this server is hosting to the server.
 	 */
@@ -40,7 +42,7 @@ public class ClientModel {
 		Set<String> localFiles = fileMap.getAvailableFilenames();
 		ConnectionUtils.sendFileList(connectionToServer, localFiles);
 	}
-	
+
 	/**
 	 * Get the list of files that are available for download. 
 	 * @return a set of String where each of the String represents the file
@@ -54,7 +56,7 @@ public class ClientModel {
 		Set<String> fileNames = ConnectionUtils.getFileList(connectionToServer);
 		return fileNames;
 	}
-	
+
 	/**
 	 * Checks for the file in the files that are currently owned and the files that are currently available.
 	 * Throwing an exception if there is a problem (we already own the file or the file isn't available).
@@ -69,14 +71,14 @@ public class ClientModel {
 			throw new FileRetrievalException("The input file name does not match any of the available files.");
 		}
 	}
-		
+
 	/**
 	 * Retrieves a FileMapping for the current client.
 	 */
 	public FileMapping getFileMapping() {
 		return fileMap;
 	}
-	
+
 	/** 
 	 * Retrieves a node that contains the given file.
 	 */
@@ -88,7 +90,7 @@ public class ClientModel {
 		}
 		return s;
 	}
-	
+
 	/**
 	 * Send server request to get ip of the node that has the file
 	 * @param fileToGet the file name that the client wants
@@ -98,7 +100,7 @@ public class ClientModel {
 		byte[] message = ConnectionUtils.merge(header, fileToGet.getBytes());
 		connectionToServer.send(message);
 	}
-	
+
 	/**
 	 * Get the IP address of the node that has the requested file. 
 	 * @return the ip address of the node that has the requested file. 
@@ -115,27 +117,30 @@ public class ClientModel {
 		}
 		return null;
 	}
-	
+
 	/**
 	 * Cleans up the connection to the Server by sending a termination message and then closing
 	 * the connection.
 	 */
 	public void cleanup(String message) {
-		byte[] terminate = ConnectionUtils.constructTerminateMessage(message);
-		connectionToServer.send(terminate);
-		connectionToServer.close();		
+		if(!closed) {
+			byte[] terminate = ConnectionUtils.constructTerminateMessage(message);
+			connectionToServer.send(terminate);
+			connectionToServer.close();	
+			closed = true;
+		}
 	}
-	
+
 	public static void setInputFileDirectory(String path) {
 		inputDirectory = path;
 	}
-	
+
 	public void updateInputFiles() {
 		fileMap = new FileMapping();
 		populateFileMap();
 		updateServerFiles();
 	}
-	
+
 	private void updateServerFiles() {
 		Set<String> fileNames = fileMap.getAvailableFilenames();
 		byte[] files = ConnectionUtils.makeFileBytes(fileNames);
@@ -143,6 +148,6 @@ public class ClientModel {
 		byte[] message = ConnectionUtils.merge(header, files);		
 		connectionToServer.send(message);
 	}
-	
-	
+
+
 }

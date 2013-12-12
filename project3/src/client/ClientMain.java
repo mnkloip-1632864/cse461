@@ -24,6 +24,7 @@ public class ClientMain {
 	private static boolean waitingForFile;
 	private static boolean waitingForClient;
 	private static boolean errorOccurred;
+	private static boolean terminated;
 
 	public static void main(String[] args) {
 		// Start the local FileServer
@@ -35,15 +36,17 @@ public class ClientMain {
 		setErrorOccurred(false);
 
 		// setup the Client View
-//		clientView = new CommandLineView();
+		//		clientView = new CommandLineView();
 		clientView = new ClientPanel();	
 
+		terminated = false;
+
 		try {
-			while (true) {
+			while (!terminated) {
 				clientView.unregisterFileReceiver();
 				Set<String> filesAvailable = clientModel.getAvailableFiles();
 				clientView.displayAvailableFiles(filesAvailable);
-				
+
 				// Wait for user input
 				waitingForClient = true;
 				clientView.tellWaiting();
@@ -80,6 +83,8 @@ public class ClientMain {
 				waitForCompleteFileTransfer();
 				clientView.displayMessage("File transfer of " + fileToGet + " complete!\n");
 			}
+		} catch(Exception e) {
+			clientModel.cleanup(e.getLocalizedMessage());
 		} finally {
 			clientModel.cleanup("Client is done");
 		}
@@ -148,7 +153,7 @@ public class ClientMain {
 			lock.unlock();
 		}
 	}
-	
+
 
 	public static void notifyFileReceiverTask(boolean error) {
 		lock.lock();
@@ -159,7 +164,7 @@ public class ClientMain {
 			lock.unlock();
 		}
 	}
-	
+
 	/**
 	 * Gets a FileMapping for the client.
 	 */
@@ -190,6 +195,11 @@ public class ClientMain {
 
 	public static void setErrorOccurred(boolean errorOccurred) {
 		ClientMain.errorOccurred = errorOccurred;
+	}
+
+	public static void terminate() {
+		terminated = true;
+		clientModel.cleanup("Client quit application.");
 	}
 
 }

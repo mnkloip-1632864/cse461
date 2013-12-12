@@ -6,6 +6,8 @@ import java.awt.Dimension;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.util.Set;
 
 import javax.swing.JButton;
@@ -16,7 +18,6 @@ import javax.swing.JPanel;
 import javax.swing.JProgressBar;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
-import javax.swing.WindowConstants;
 
 public class ClientPanel implements ClientView {
 	
@@ -50,7 +51,11 @@ public class ClientPanel implements ClientView {
 
 	private void loadGUI() {
 		clientFrame = new JFrame("Client File Transfer Control Panel");
-		clientFrame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
+		clientFrame.addWindowListener(new WindowAdapter() {
+			public void windowClosing(WindowEvent e) {
+				ClientMain.terminate();
+			}
+		});
 		clientFrame.setMaximumSize(new Dimension(1920, 1080));
 		buttonPanel = new JPanel();
 		selectPanel = new JPanel();

@@ -16,8 +16,7 @@ import utils.TCPConnection;
 public class ServerThread extends Thread {
 
 	private TCPConnection connection;
-	
-	
+		
 	public ServerThread(TCPConnection connection) {
 		this.connection = connection;
 	}
@@ -71,12 +70,23 @@ public class ServerThread extends Thread {
 			finder.removeAddress(connection.getHostName());
 			retrieveAndStoreFiles(payloadLen);
 			break;
+		case MessageType.TERMINATE:
+			// print out the termination message and exit
+			printTerminationMessage(payloadLen);
 		default:
 			return false;
 		}
 		return true;
 	}
 
+	private void printTerminationMessage(int payloadLen) {
+		byte[] payload = connection.receive(payloadLen);
+		System.out.println(new String(payload));
+	}
+
+	/**
+	 * Gets a node that is sharing the given file and sends it to the user.
+	 */
 	private void sendNodeAddressContainingFile(String fileName) {
 		String nodeAddress = FileFinder.getInstance().getAddressFor(fileName);
 		if(nodeAddress == null) {
@@ -118,8 +128,6 @@ public class ServerThread extends Thread {
 		fileFinder.addFilesToAddress(connection.getHostName(), fileNames);
 	}
 	
-	
-
 	/**
 	 * Cleans up the state of this thread and letting the server
 	 * know that this client cannot transfer files.
