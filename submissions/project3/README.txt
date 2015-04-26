@@ -1,5 +1,4 @@
 Joseph Godlewski and Zhiting Zhu
-joe3701 and zzt0215
 
 CSE 461 Project 3 README
 

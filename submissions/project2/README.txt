@@ -1,6 +1,4 @@
 Joseph Godlewski    Zhiting Zhu
-joe3701             zzt0215
-1021706             1030029
 
 CSE 461 A
 README for project 2:
